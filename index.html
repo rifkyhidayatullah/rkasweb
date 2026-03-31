@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>RKAS Web</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h2>RKAS Percobaan Jir</h2>
+  </div>
+
+  <!-- PAGU -->
+  <div class="pagu-box">
+    <label>Pagu:</label>
+    <input type="number" id="paguInput" onchange="updatePagu()">
+
+    <span>Tahap 1: <b id="tahap1">0</b></span>
+    <span>Tahap 2: <b id="tahap2">0</b></span>
+  </div>
+
+  <!-- TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th>Komponen</th>
+        <th>%</th>
+        <th>Besaran</th>
+        <th>Input</th>
+        <th>Sisa</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <button onclick="tambahKomponen()">＋ Tambah Komponen</button>
+
+  <h3>Total Input: <span id="totalInput">0</span></h3>
+  <button onclick="exportExcel()">📊 Export Excel</button>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal">
+  <div class="modal-content big">
+    <h3 id="modalTitle"></h3>
+
+    <table>
+      <thead>
+        <tr>
+      <th>No</th>
+      <th>Nama Barang/Jasa</th>
+      <th>Sub</th>
+      <th>Kegiatan</th>
+      <th>Uraian</th>
+      <th>Qty</th>
+      <th>Harga</th>
+      <th>Jumlah</th>
+      <th>Tanggal</th>
+      <th>Keterangan</th>
+      <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="detailTable"></tbody>
+    </table>
+    <div style="margin-top:10px; text-align:right;">
+  <b>Total: <span id="totalDetail">Rp 0</span></b>
+</div>
+    <div class="modal-actions">
+  <button class="btn-add" onclick="tambahItem()">＋</button>
+  <button class="btn-save" onclick="simpanData()">💾</button>
+  <button class="btn-close" onclick="closeModal()">✖</button>
+</div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<!-- Firebase -->
+<script type="module" src="script.js"></script>
+</body>
+</html>
