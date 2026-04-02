@@ -21,6 +21,107 @@ let pagu = 0;
 let data = [];
 let detailData = {};
 let currentKomponen = "";
+let previewRekap = [];
+let previewDetail = [];
+
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+
+// ================= DRAG & DROP =================
+dropZone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropZone.classList.add("dragover");
+});
+
+dropZone.addEventListener("dragleave", () => {
+  dropZone.classList.remove("dragover");
+});
+
+dropZone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropZone.classList.remove("dragover");
+  handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener("change", (e) => {
+  handleFile(e.target.files[0]);
+});
+
+// ================= HANDLE FILE =================
+function handleFile(file) {
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    const dataExcel = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(dataExcel, { type: 'array' });
+
+    previewRekap = XLSX.utils.sheet_to_json(workbook.Sheets["Rekap"]);
+    previewDetail = XLSX.utils.sheet_to_json(workbook.Sheets["Detail"]);
+
+    showPreview();
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+function toNumber(val) {
+  if (!val) return 0;
+  return Number(String(val).replace(/[^0-9]/g, "")) || 0;
+}
+
+function showPreview() {
+  const table = document.getElementById("previewTable");
+  table.innerHTML = "";
+
+  previewRekap.forEach(row => {
+    let tr = `<tr>
+      <td>${row["Komponen"]}</td>
+      <td>${row["%"]}</td>
+      <td>${row["Input"]}</td>
+    </tr>`;
+    table.innerHTML += tr;
+  });
+
+  document.getElementById("previewBox").style.display = "block";
+}
+
+async function confirmImport() {
+  // ================= REKAP
+  data = previewRekap.map(row => ({
+    nama: row["Komponen"],
+    persen: toNumber(row["%"]) || 0,
+    input: toNumber(row["Input"])
+  }));
+
+  // ================= DETAIL
+  detailData = {};
+
+  previewDetail.forEach(row => {
+    const nama = row["Komponen"];
+
+    if (!detailData[nama]) {
+      detailData[nama] = [];
+    }
+
+    console.log("IMPORT ROW:", row); // 🔥 DEBUG
+
+    detailData[nama].push({
+      namaBarang: row["Nama Barang/Jasa"] || "",
+      sub: row["Sub"] || "",
+      kegiatan: row["Kegiatan"] || "",
+      uraian: row["Uraian"] || "", // 🔥 INI YANG BENAR
+satuan: toNumber(row["Qty"]),
+harga: toNumber(row["Harga"]),
+      tanggal: row["Tanggal"] || "",
+      keterangan: row["Keterangan"] || ""
+    });
+  });
+
+  render();
+  await simpanData();
+
+  alert("Import sukses 🔥");
+}
 
 // ================= FORMAT =================
 function formatRupiah(angka) {
@@ -37,56 +138,258 @@ function updatePagu() {
   render();
 }
 
-function exportExcel() {
-  let wb = XLSX.utils.book_new();
+async function importExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
 
-  // ================= SHEET 1 (REKAP)
-  let rekap = [
-    ["Komponen", "%", "Besaran", "Input", "Sisa"]
-  ];
+  const reader = new FileReader();
+
+  reader.onload = async function(e) {
+    const dataExcel = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(dataExcel, { type: 'array' });
+
+    // ================= REKAP
+    const sheetRekap = workbook.Sheets["Rekap"];
+    const jsonRekap = XLSX.utils.sheet_to_json(sheetRekap);
+
+    data = jsonRekap.map(row => ({
+      nama: row["Komponen"],
+      persen: toNumber(row["%"]) || 0,
+      input: toNumber(row["Input"])
+    }));
+
+    // ================= DETAIL
+    const sheetDetail = workbook.Sheets["Detail"];
+    const jsonDetail = XLSX.utils.sheet_to_json(sheetDetail);
+
+    detailData = {};
+
+    jsonDetail.forEach(row => {
+      const nama = row["Komponen"];
+
+      if (!detailData[nama]) {
+        detailData[nama] = [];
+      }
+
+      console.log("IMPORT ROW:", row); // 🔥 DEBUG
+
+      detailData[nama].push({
+        barang: row["Nama Barang/Jasa"] || "",
+        sub: row["Sub"] || "",
+        kegiatan: row["Kegiatan"] || "",
+        uraian: row["Uraian"] || "", // 🔥 FIX
+        satuan: Number(row["Qty"]) || 0,
+        harga: Number(row["Harga"]) || 0,
+        tanggal: row["Tanggal"] || "",
+        keterangan: row["Keterangan"] || ""
+      });
+    });
+
+    render();
+    await simpanData();
+
+    alert("Import berhasil 🔥");
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+window.importExcel = importExcel;
+
+async function exportExcel() {
+  const workbook = new ExcelJS.Workbook();
+
+  // ================= CONFIG (EDIT SENDIRI) =================
+  const sekolah = "TK Imam Bukhori";
+  const kota = "Bekasi";
+  const provinsi = "Jawa Barat";
+  const dana = "BOP";
+  const tahun = "2026";
+
+  // ================= SHEET REKAP =================
+  const sheet1 = workbook.addWorksheet("Rekap");
+
+  // 🧾 HEADER
+  sheet1.mergeCells("A1:E1");
+  sheet1.getCell("A1").value = "LAPORAN RKAS";
+  sheet1.getCell("A1").font = { size: 16, bold: true };
+  sheet1.getCell("A1").alignment = { horizontal: "center" };
+
+  sheet1.mergeCells("A2:E2");
+  sheet1.getCell("A2").value = "TAHUN ANGGARAN " + tahun;
+  sheet1.getCell("A2").alignment = { horizontal: "center" };
+
+  sheet1.addRow([]);
+  sheet1.addRow(["Nama Sekolah", ":", sekolah]).font ={bold: true};
+  sheet1.addRow(["Kab/Kota", ":", kota]).font ={bold: true};
+  sheet1.addRow(["Provinsi", ":", provinsi]).font ={bold: true};
+  sheet1.addRow(["Sumber Dana", ":", dana]).font ={bold: true};
+
+  sheet1.addRow([]);
+
+  // 📊 HEADER TABLE
+  sheet1.addRow(["Komponen", "%", "Besaran", "Input", "Sisa"]);
+
+  let totalInput = 0;
 
   data.forEach(item => {
+      let persen = toNumber(item.persen);
+  let input = toNumber(item.input);
+
     let besaran = pagu * item.persen / 100;
     let sisa = besaran - item.input;
 
-    rekap.push([
+    totalInput += item.input;
+
+    sheet1.addRow([
       item.nama,
-      item.persen + "%",
+      persen,
       besaran,
-      item.input,
+      input,
       sisa
     ]);
   });
 
-  let ws1 = XLSX.utils.aoa_to_sheet(rekap);
-  XLSX.utils.book_append_sheet(wb, ws1, "Rekap");
+  sheet1.addRow([]);
+  sheet1.addRow(["TOTAL", "", "", totalInput]);
 
-  // ================= SHEET 2 (DETAIL)
-  let detailSheet = [
-    ["Komponen", "Sub", "Kegiatan", "Uraian", "Volume", "Satuan", "Harga", "Jumlah", "Tanggal", "Keterangan"]
+  // 🎨 STYLE HEADER TABLE
+  sheet1.getRow(9).eachCell(cell => {
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "2E7D32" } // hijau elegan
+    };
+    cell.font = { bold: true, color: { argb: "FFFFFF" } };
+    cell.alignment = { horizontal: "center" };
+  });
+
+  // 📏 FORMAT ANGKA
+  sheet1.columns = [
+    { width: 25 },
+    { width: 10 },
+    { width: 20 },
+    { width: 20 },
+    { width: 20 }
   ];
 
+  sheet1.eachRow((row, rowNumber) => {
+    if (rowNumber >= 10) {
+      row.getCell(3).numFmt = '"Rp" #,##0';
+      row.getCell(4).numFmt = '"Rp" #,##0';
+      row.getCell(5).numFmt = '"Rp" #,##0';
+    }
+  });
+
+  // ================= SHEET DETAIL =================
+  const sheet2 = workbook.addWorksheet("Detail");
+
+  sheet2.mergeCells("A1:H1");
+  sheet2.getCell("A1").value = "DETAIL RKAS";
+  sheet2.getCell("A1").font = { size: 16, bold: true };
+  sheet2.getCell("A1").alignment = { horizontal: "center" };
+
+  sheet2.addRow([]);
+
+  sheet2.addRow([
+    "Komponen",
+    "Nama Barang",
+    "Uraian",
+    "Qty",
+    "Harga",
+    "Jumlah",
+    "Tanggal",
+    "Keterangan"
+  ]);
+
+  let grandTotal = 0;
+
   Object.keys(detailData).forEach(nama => {
+    sheet2.addRow([nama]);
+
+    let subtotal = 0;
+
     detailData[nama].forEach(item => {
-      detailSheet.push([
-        nama,
-        item.sub,
-        item.kegiatan,
+      let qty = Number(item.satuan) || 0;
+let harga = Number(item.harga) || 0;
+let jumlah = qty * harga;
+      subtotal += jumlah;
+      grandTotal += jumlah;
+
+      sheet2.addRow([
+        "",
+        item.namaBarang,
         item.uraian,
         item.satuan,
         item.harga,
-        item.volume * item.harga,
+        jumlah,
         item.tanggal,
         item.keterangan
       ]);
     });
+
+    // 🔥 SUBTOTAL
+    sheet2.addRow(["", "", "", "Subtotal", subtotal]);
+    sheet2.addRow([]);
   });
 
-  let ws2 = XLSX.utils.aoa_to_sheet(detailSheet);
-  XLSX.utils.book_append_sheet(wb, ws2, "Detail");
+  // 🔥 GRAND TOTAL
+  sheet2.addRow(["", "", "", "GRAND TOTAL", grandTotal]);
 
-  // ================= DOWNLOAD
-  XLSX.writeFile(wb, "RKAS.xlsx");
+  // 🎨 HEADER DETAIL
+  sheet2.getRow(3).eachCell(cell => {
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "1565C0" } // biru elegan
+    };
+    cell.font = { bold: true, color: { argb: "FFFFFF" } };
+  });
+
+sheet2.columns = [
+  { width: 20 }, // Komponen
+  { width: 25 }, // Nama Barang
+  { width: 30 }, // Uraian
+  { width: 10 }, // Qty
+  { width: 20 }, // Harga
+  { width: 20 }, // Jumlah
+  { width: 15 }, // Tanggal
+  { width: 25 }  // Keterangan
+];
+
+  // FORMAT RUPIAH
+  sheet2.eachRow((row, i) => {
+    if (i >= 4) {
+      row.getCell(4).numFmt = '"Rp" #,##0';
+      row.getCell(5).numFmt = '"Rp" #,##0';
+    }
+  });
+
+  // 📏 BORDER
+  function border(sheet) {
+    sheet.eachRow(row => {
+      row.eachCell(cell => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" }
+        };
+      });
+    });
+  }
+
+  border(sheet1);
+  border(sheet2);
+
+  // 💾 DOWNLOAD
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer]);
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "RKAS_PRO.xlsx";
+  a.click();
 }
 
 // ================= RENDER TABLE =================
@@ -229,13 +532,13 @@ function renderDetail() {
       <tr>
         <td>${i + 1}</td>
 
-        <td><input value="${item.komponen}" onchange="updateDetail(${i}, 'komponen', this.value)"></td>
+        <td><input value="${item.namaBarang || ''}" onchange="updateDetail(${i}, 'namaBarang', this.value)"></td>
         <td><input value="${item.sub}" onchange="updateDetail(${i}, 'sub', this.value)"></td>
         <td><input value="${item.kegiatan}" onchange="updateDetail(${i}, 'kegiatan', this.value)"></td>
         <td><input value="${item.uraian}" onchange="updateDetail(${i}, 'uraian', this.value)"></td>
         
-        <td><input type="number" value="${item.satuan}" onchange="updateDetail(${i}, 'satuan', this.value)"></td>
-        <td><input type="number" value="${item.harga}" onchange="updateDetail(${i}, 'harga', this.value)"></td>
+        <td><input type="number" value="${item.satuan || 0}" onchange="updateDetail(${i}, 'satuan', this.value)"></td>
+        <td><input type="number" value="${item.harga || 0}" onchange="updateDetail(${i}, 'harga', this.value)"></td>
 
         <td>${formatRupiah(jumlah)}</td>
 
@@ -255,7 +558,7 @@ function renderDetail() {
   document.getElementById("totalDetail").innerText = formatRupiah(totalSemua);
 
   setTimeout(syncKeUtama, 0);
-  console.log("TOTAL SEMUA:", totalSemua);
+  console.log("TOTAL SEMUA:", totalSemua);  
 }
 
 function updateBulan(i, bulan, value) {
@@ -274,11 +577,11 @@ function tambahItem() {
   }
 
   detailData[currentKomponen].push({
-    komponen: "",
+    namaBarang: "",
     sub: "",
     kegiatan: "",
     uraian: "",
-    satuan: "pcs",
+    satuan: 1,
     harga: 1000,
     jumlah: 0,
     tanggal: "",
@@ -292,9 +595,10 @@ function updateDetail(i, field, value) {
   let item = detailData[currentKomponen][i];
 
   if (field === "harga" || field === "satuan") {
-    item[field] = Number(value) || 0;
+    let angka = parseInt(value);
+    item[field] = isNaN(angka) ? 0 : angka; // 🔥 aman dari NaN
   } else {
-    item[field] = value;
+    item[field] = value || "";
   }
 
   setTimeout(renderDetail, 0);
