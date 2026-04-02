@@ -1,6 +1,22 @@
 body {
   font-family: Arial;
   background: #f5f5f5;
+  position: relative;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 80%;
+  height: 80%;
+  background: url('img/LOGO TKIT IMAM BUKHARI.png') no-repeat center;
+  background-size: contain;
+  opacity: 0.08; /* transparan */
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .container {
@@ -10,11 +26,24 @@ body {
   padding: 20px;
 }
 
+.logo {
+  position: absolute;
+  left: 15px;
+
+  height: 60px !important;     /* 🔥 ini yang ngontrol ukuran */
+  width: auto !important;      /* biar ga gepeng */
+
+  object-fit: contain;   /* sesuaikan ukuran */
+}
+
 .header {
-  background: green;
+  background: #291056;
   color: white;
-  text-align: center;
-  padding: 10px;
+  padding: 15px 10px;
+    display: flex;              /* 🔥 penting */
+  align-items: center;        /* vertikal rata tengah */
+  justify-content: center;    /* teks tetap di tengah */
+  position: relative;
 }
 
 .info {
@@ -36,7 +65,7 @@ table {
 }
 
 th {
-  background: yellow;
+  background: #fddd35;
   border: 1px solid black;
 }
 
@@ -148,4 +177,28 @@ button {
 
 .btn-close:hover {
   background: darkred;
+}
+
+.import-box {
+  border: 2px dashed #aaa;
+  padding: 30px;
+  text-align: center;
+  margin-top: 20px;
+  border-radius: 10px;
+  background: #fafafa;
+  transition: 0.3s;
+}
+
+.import-box.dragover {
+  border-color: #007bff;
+  background: #e6f0ff;
+}
+
+.import-box button {
+  margin-top: 10px;
+  padding: 8px 15px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
 }
