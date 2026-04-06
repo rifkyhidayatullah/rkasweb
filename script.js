@@ -324,7 +324,7 @@ let jumlah = qty * harga;
         item.harga,
         jumlah,
         item.tanggal,
-        item.keterangan
+        item.keterangan + (item.bukti ? " | Bukti: " + item.bukti : "")
       ]);
     });
 
@@ -427,7 +427,7 @@ function render() {
         <td>${formatRupiah(sisa)}</td>
 
         <td>
-          <button onclick="lihatDetail('${item.nama}')">🧐</button>
+          <button onclick="lihatDetail('${item.nama}')">🔍</button>
           <button onclick="editKomponen(${i})">✍</button>
           <button onclick="hapusKomponen(${i})">✖</button>
         </td>
@@ -544,10 +544,24 @@ function renderDetail() {
 
         <td><input type="date" value="${item.tanggal}" onchange="updateDetail(${i}, 'tanggal', this.value)"></td>
         <td><input value="${item.keterangan}" onchange="updateDetail(${i}, 'keterangan', this.value)"></td>
-
         <td>
-          <button onclick="hapusItem(${i})">❌</button>
-        </td>
+   ${item.bukti ? `
+    <img src="${item.bukti}" class="preview-img" 
+      onclick="openPreview('${item.bukti}')">
+  ` : "-"}
+
+  <input type="file" id="file${i}" hidden onchange="uploadBukti(${i}, this)">
+
+<button onclick="document.getElementById('file${i}').click()" class="btn-upload">
+  📎 Upload Bukti
+</button>
+</td>
+<td>
+  <div class="aksi-group">
+    ${item.bukti ? `<button onclick="hapusBukti(${i})">🚮</button>` : ""}
+    <button onclick="hapusItem(${i})" >❌</button>
+  </div>
+  </td>
       </tr>
     `;
 
@@ -559,6 +573,13 @@ function renderDetail() {
 
   setTimeout(syncKeUtama, 0);
   console.log("TOTAL SEMUA:", totalSemua);  
+}
+
+function zoomGambar(url) {
+  const win = window.open();
+  win.document.write(`
+    <img src="${url}" style="width:100%">
+  `);
 }
 
 function updateBulan(i, bulan, value) {
@@ -585,7 +606,8 @@ function tambahItem() {
     harga: 1000,
     jumlah: 0,
     tanggal: "",
-    keterangan: ""
+    keterangan: "",
+    bukti: ""
   });
 
   renderDetail();
@@ -630,6 +652,15 @@ async function loadData() {
   updatePagu();
 }
 
+function hapusBukti(index) {
+  if (!confirm("Hapus bukti ini?")) return;
+
+  detailData[currentKomponen][index].bukti = "";
+
+  simpanData();
+  renderDetail();
+}
+
 async function syncKeUtama() {
   let list = detailData[currentKomponen] || [];
 
@@ -647,6 +678,57 @@ async function syncKeUtama() {
   // 🔥 AUTO SAVE
   await simpanData();
 }
+
+function openPreview(url) {
+  document.getElementById("imageModal").style.display = "flex";
+  document.getElementById("modalImg").src = url;
+}
+
+function closePreview() {
+  document.getElementById("imageModal").style.display = "none";
+}
+
+async function uploadBukti(index, input) {
+  const file = input.files[0]; // 🔥 INI WAJIB
+  if (!file) return;
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "rkas_upload"); // pastikan benar
+    formData.append("folder", "rkas_bukti");
+
+    const res = await fetch("https://api.cloudinary.com/v1_1/dasfuelus/image/upload", {
+      method: "POST",
+      body: formData
+    });
+
+    const dataRes = await res.json();
+
+    console.log("UPLOAD RESULT:", dataRes);
+
+    if (!dataRes.secure_url) {
+      alert("Upload gagal ❌ (preset salah / belum aktif)");
+      return;
+    }
+
+    const url = dataRes.secure_url;
+
+    detailData[currentKomponen][index].bukti = url;
+
+    await simpanData();
+    renderDetail();
+
+    alert("Upload bukti berhasil 🔥");
+
+  } catch (err) {
+    console.error(err);
+    alert("Upload gagal ❌");
+  }
+}
+
+window.uploadBukti = uploadBukti;
+window.hapusBukti = hapusBukti;
 window.updatePagu = updatePagu;
 window.tambahKomponen = tambahKomponen;
 window.updatePersen = updatePersen;
@@ -661,3 +743,6 @@ window.updateDetail = updateDetail;
 window.hapusItem = hapusItem;
 window.onload = loadData;
 window.exportExcel = exportExcel;
+window.openPreview = openPreview;
+window.closePreview = closePreview;
+window.confirmImport = confirmImport;
