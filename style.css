@@ -65,14 +65,23 @@ table {
 }
 
 th {
-  background: #fddd35;
+  background: #291056;
   border: 1px solid black;
+  color: white;
 }
 
 td {
   border: 1px solid black;
   text-align: center;
   padding: 5px;
+}
+td:last-child {
+  white-space: nowrap;
+}
+th:last-child,
+td:last-child {
+  width: 120px; /* bisa kamu ubah jadi 140px kalau masih sempit */
+  text-align: center;
 }
 
 .status-kurang {
@@ -201,4 +210,62 @@ button {
   color: white;
   border: none;
   border-radius: 5px;
+}
+.btn-upload {
+  background: #1976D2;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-upload:hover {
+  background: #0D47A1;
+}
+.aksi-group button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #007bff;
+}
+
+.aksi-group button:hover {
+  opacity: 0.8;
+}
+.preview-img {
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+}
+.img-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  justify-content: center;
+  align-items: center;
+}
+
+/* gambar besar */
+.img-content {
+  max-width: 80%;
+  max-height: 80%;
+  border-radius: 10px;
+}
+.img-content {
+  animation: zoomIn 0.2s ease;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
