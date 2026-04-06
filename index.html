@@ -39,10 +39,10 @@
     <tbody id="tableBody"></tbody>
   </table>
 
-  <button onclick="tambahKomponen()">＋ Tambah Komponen</button>
+  <button onclick="tambahKomponen()" style="background-color: #007bff;; color: white; border-radius: 5px; border-color: #007bff;">＋ Tambah Komponen</button>
 
   <h3>Total Input: <span id="totalInput">0</span></h3>
-  <button onclick="exportExcel()">📊 Export Excel</button>
+  <button onclick="exportExcel()" style="background-color: #007bff;; color: white; border-radius: 5px; border-color: #007bff;">📊 Export Excel</button>
   <div class="import-box" id="dropZone">
   <p>📂 Drag & Drop Excel di sini</p>
   <button onclick="document.getElementById('fileInput').click()">
@@ -77,6 +77,7 @@
       <th>Jumlah</th>
       <th>Tanggal</th>
       <th>Keterangan</th>
+      <th>Bukti</th>
       <th>Aksi</th>
         </tr>
       </thead>
@@ -91,6 +92,9 @@
   <button class="btn-close" onclick="closeModal()">✖</button>
 </div>
   </div>
+</div>
+<div id="imageModal" class="img-modal" onclick="closePreview()">
+  <img id="modalImg" class="img-content">
 </div>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
