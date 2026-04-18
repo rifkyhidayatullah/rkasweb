@@ -12,36 +12,68 @@
   <!-- HEADER -->
   <div class="header">
     <img src="img/LOGO TKIT IMAM BUKHARI.png" class="logo">
-    <h2>RKAS TK Imam Bukhori</h2>
+    <h2>RKAS TK Imam Bukhari</h2>
   </div>
 
   <!-- PAGU -->
-  <div class="pagu-box">
+ <div class="pagu-box">
+  <div class="left">
+    <label>Tahun Ajaran:</label>
+    <input type="text" id="tahunAjaran" placeholder="2025/2026" onchange="simpanData()">
+
     <label>Pagu:</label>
-    <input type="number" id="paguInput" onchange="updatePagu()">
+    <input type="text" id="paguInput" oninput="formatInput(this)" onchange="updatePagu()">
 
     <span>Tahap 1: <b id="tahap1">0</b></span>
     <span>Tahap 2: <b id="tahap2">0</b></span>
   </div>
 
+  <div class="right" id="jam"></div>
+</div>
   <!-- TABLE -->
   <table>
     <thead>
       <tr>
         <th>Komponen</th>
+        <th>🔋</th>
         <th>%</th>
-        <th>Besaran</th>
+        <!-- <th>Besaran</th> -->
         <th>Input</th>
-        <th>Sisa</th>
         <th>Aksi</th>
       </tr>
     </thead>
     <tbody id="tableBody"></tbody>
   </table>
 
-  <button onclick="tambahKomponen()" style="background-color: #007bff;; color: white; border-radius: 5px; border-color: #007bff;">＋ Tambah Komponen</button>
+  <button onclick="tambahKomponen()" style="background-color: #007bff;; color: white; border-radius: 5px; border-color: #007bff; margin-bottom: 20px;">＋ Tambah Komponen</button>
 
-  <h3>Total Input: <span id="totalInput">0</span></h3>
+  <!-- CARD -->
+<div class="summary-container">
+  <div class="card summary">
+    <h3>Total Digunakan</h3>
+    <p id="totalInput">Rp 0</p>
+  </div>
+
+  <div class="card summary">
+    <h3>Sisa Dana</h3>
+    <p id="sisaDana">Rp 0</p>
+  </div>
+</div>
+
+<!-- CHART -->
+<div class="card chart-card">
+  <div class="card-header">
+    📊 Distribusi Anggaran
+  </div>
+
+  <div class="chart-wrapper">
+    <canvas id="myChart"></canvas>
+  </div>
+
+  <div id="legendCustom" class="legend"></div>
+</div>
+
+<canvas id="chart"></canvas>
   <button onclick="exportExcel()" style="background-color: #007bff;; color: white; border-radius: 5px; border-color: #007bff;">📊 Export Excel</button>
   <div class="import-box" id="dropZone">
   <p>📂 Drag & Drop Excel di sini</p>
@@ -98,6 +130,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Firebase -->
 <script type="module" src="script.js"></script>
 </body>
