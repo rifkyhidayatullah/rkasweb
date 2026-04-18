@@ -128,15 +128,38 @@ function formatRupiah(angka) {
   return "Rp " + (angka || 0).toLocaleString("id-ID");
 }
 
+function parseAngka(val) {
+  return Number(String(val).replace(/\./g, "").replace(/[^0-9]/g, "")) || 0;
+}
+
 // ================= PAGU =================
-function updatePagu() {
-  pagu = parseInt(document.getElementById("paguInput").value) || 0;
+async function updatePagu() {
+  pagu = parseAngka(document.getElementById("paguInput").value);
 
   document.getElementById("tahap1").innerText = formatRupiah(pagu / 2);
   document.getElementById("tahap2").innerText = formatRupiah(pagu / 2);
 
   render();
+  await simpanData(); 
 }
+
+function updateJam() {
+  const now = new Date();
+
+  const jam = now.toLocaleTimeString("id-ID");
+  const tanggal = now.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+
+  document.getElementById("jam").innerHTML = `
+    <div>📅 ${tanggal}</div>
+    <div>⏰ ${jam}</div>
+  `;
+}
+setInterval(updateJam, 1000);
+updateJam();
 
 async function importExcel(event) {
   const file = event.target.files[0];
@@ -204,7 +227,8 @@ async function exportExcel() {
   const kota = "Bekasi";
   const provinsi = "Jawa Barat";
   const dana = "BOP";
-  const tahun = "2026";
+  const tahunInput = document.getElementById("tahunAjaran");
+const tahun = tahunInput ? tahunInput.value : "-";
 
   // ================= SHEET REKAP =================
   const sheet1 = workbook.addWorksheet("Rekap");
@@ -228,30 +252,30 @@ async function exportExcel() {
   sheet1.addRow([]);
 
   // 📊 HEADER TABLE
-  sheet1.addRow(["Komponen", "%", "Besaran", "Input", "Sisa"]);
+  sheet1.addRow(["Komponen", "%", "Input"]);
 
   let totalInput = 0;
 
   data.forEach(item => {
       let persen = toNumber(item.persen);
-  let input = toNumber(item.input);
+    let input = toNumber(item.input);
+    
 
-    let besaran = pagu * item.persen / 100;
-    let sisa = besaran - item.input;
-
-    totalInput += item.input;
+    totalInput += input;
 
     sheet1.addRow([
       item.nama,
       persen,
-      besaran,
-      input,
-      sisa
+      input
+  
     ]);
   });
 
+let sisaDana = pagu - totalInput;
+
   sheet1.addRow([]);
-  sheet1.addRow(["TOTAL", "", "", totalInput]);
+  sheet1.addRow(["SISA DANA", "", sisaDana]);
+  sheet1.addRow(["TOTAL", "", totalInput]);
 
   // 🎨 STYLE HEADER TABLE
   sheet1.getRow(9).eachCell(cell => {
@@ -266,18 +290,15 @@ async function exportExcel() {
 
   // 📏 FORMAT ANGKA
   sheet1.columns = [
-    { width: 25 },
+    { width: 30 },
     { width: 10 },
-    { width: 20 },
-    { width: 20 },
     { width: 20 }
+
   ];
 
   sheet1.eachRow((row, rowNumber) => {
     if (rowNumber >= 10) {
       row.getCell(3).numFmt = '"Rp" #,##0';
-      row.getCell(4).numFmt = '"Rp" #,##0';
-      row.getCell(5).numFmt = '"Rp" #,##0';
     }
   });
 
@@ -392,6 +413,51 @@ sheet2.columns = [
   a.click();
 }
 
+function formatAngka(angka) {
+  return (angka || 0).toLocaleString("id-ID");
+}
+
+let chart;
+
+function renderChart() {
+  const ctx = document.getElementById("myChart");
+
+  if (!ctx) return;
+
+  let labels = data.map(d => d.nama);
+  let values = data.map(d => parseAngka(d.input));
+
+  let colors = [
+    "#22c55e", "#3b82f6", "#f59e0b",
+    "#ef4444", "#8b5cf6", "#14b8a6", "#9d429d", "#42919d", "#429d83", "#8f9d42",
+    "#6a9d42", "#9d4263", "#4e429d", "#429d6b", "#749d42", "#3b5d11", "#f0c953"
+  ];
+
+  if (window.myChartObj) {
+    window.myChartObj.destroy();
+  }
+
+  window.myChartObj = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          display: false // 🔥 matiin bawaan
+        }
+      }
+    }
+  });
+
+  renderLegend(labels, colors); // 🔥 custom legend
+}
+
 // ================= RENDER TABLE =================
 function render() {
   let tbody = document.getElementById("tableBody");
@@ -399,32 +465,36 @@ function render() {
 
   let totalInput = 0;
 
+  // 🔥 WAJIB ADA (fix bug)
+  let totalSemua = data.reduce((sum, item) => {
+    return sum + parseAngka(item.input);
+  }, 0);
+
   data.forEach((item, i) => {
-  let persen = parseInt(item.persen) || 0;
-  let input = parseInt(item.input) || 0;
+    let input = parseAngka(item.input) || 0;
 
-  let besaran = pagu * persen / 100;
-  let sisa = besaran - input;
+    let persen = pagu ? (input / pagu * 100) : 0;
 
-    totalInput += item.input;
+    totalInput += input;
 
     let row = `
       <tr>
         <td>${item.nama}</td>
 
         <td>
-          <input type="number" value="${item.persen}" 
-          onchange="updatePersen(${i}, this.value)">%
+          <div class="progress">
+            <div class="progress-bar" style="width:${persen}%"></div>
+          </div>
         </td>
 
-        <td>${formatRupiah(besaran)}</td>
-
-        <td>
-          <input type="number" value="${item.input}" 
-          onchange="updateInput(${i}, this.value)">
+        <td class="persen">
+          ${persen.toFixed(1)}%
         </td>
 
-        <td>${formatRupiah(sisa)}</td>
+        <td class="rupiah">
+  ${formatRupiah(input)}
+  <div class="hint">auto dari detail</div>
+</td>
 
         <td>
           <button onclick="lihatDetail('${item.nama}')">🔍</button>
@@ -437,18 +507,34 @@ function render() {
     tbody.innerHTML += row;
   });
 
+  let sisa = pagu - totalSemua;
+
   document.getElementById("totalInput").innerText = formatRupiah(totalInput);
+  document.getElementById("sisaDana").innerText = formatRupiah(sisa);
+
+  renderChart();
+}
+
+function renderLegend(labels, colors) {
+  let html = "";
+
+  labels.forEach((label, i) => {
+    html += `
+      <div class="legend-item">
+        <span class="dot" style="background:${colors[i]}"></span>
+        ${label}
+      </div>
+    `;
+  });
+
+  document.getElementById("legendCustom").innerHTML = html;
 }
 
 // ================= UPDATE =================
 function updateInput(i, val) {
-  data[i].input = parseInt(val) || 0;
+  data[i].input = parseAngka(val);
   render();
-}
-
-function updatePersen(i, val) {
-  data[i].persen = parseInt(val) || 0;
-  render();
+  simpanData();
 }
 
 function hapusKomponen(i) {
@@ -514,6 +600,11 @@ function closeModal() {
   document.getElementById("modal").style.display = "none";
 }
 
+function autoResize(el) {
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+}
+
 // ================= DETAIL =================
 function renderDetail() {
   let table = document.getElementById("detailTable");
@@ -535,7 +626,13 @@ function renderDetail() {
         <td><input value="${item.namaBarang || ''}" onchange="updateDetail(${i}, 'namaBarang', this.value)"></td>
         <td><input value="${item.sub}" onchange="updateDetail(${i}, 'sub', this.value)"></td>
         <td><input value="${item.kegiatan}" onchange="updateDetail(${i}, 'kegiatan', this.value)"></td>
-        <td><input value="${item.uraian}" onchange="updateDetail(${i}, 'uraian', this.value)"></td>
+        <td>
+  <textarea 
+    class="uraian"
+    onchange="updateDetail(${i}, 'uraian', this.value)"
+    oninput="autoResize(this)"
+  >${item.uraian || ''}</textarea>
+</td>
         
         <td><input type="number" value="${item.satuan || 0}" onchange="updateDetail(${i}, 'satuan', this.value)"></td>
         <td><input type="number" value="${item.harga || 0}" onchange="updateDetail(${i}, 'harga', this.value)"></td>
@@ -543,7 +640,13 @@ function renderDetail() {
         <td>${formatRupiah(jumlah)}</td>
 
         <td><input type="date" value="${item.tanggal}" onchange="updateDetail(${i}, 'tanggal', this.value)"></td>
-        <td><input value="${item.keterangan}" onchange="updateDetail(${i}, 'keterangan', this.value)"></td>
+        <td>
+  <textarea 
+    class="keterangan"
+    onchange="updateDetail(${i}, 'keterangan', this.value)"
+    oninput="autoResize(this)"
+  >${item.keterangan || ''}</textarea>
+</td>
         <td>
    ${item.bukti ? `
     <img src="${item.bukti}" class="preview-img" 
@@ -630,7 +733,8 @@ async function simpanData() {
   await setDoc(doc(db, "rkas", "dataUtama"), {
     pagu: pagu,
     komponen: data,
-    detail: detailData
+    detail: detailData,
+    tahunAjaran: document.getElementById("tahunAjaran").value
   });
 
   console.log("Auto save jalan 🔥");
@@ -646,9 +750,12 @@ async function loadData() {
     pagu = d.pagu || 0;
     data = d.komponen || [];
     detailData = d.detail || {};
+
+    document.getElementById("tahunAjaran").value = d.tahunAjaran || "";
   }
 
-  document.getElementById("paguInput").value = pagu;
+  document.getElementById("paguInput").value = formatAngka(pagu);
+  render(); 
   updatePagu();
 }
 
@@ -731,7 +838,6 @@ window.uploadBukti = uploadBukti;
 window.hapusBukti = hapusBukti;
 window.updatePagu = updatePagu;
 window.tambahKomponen = tambahKomponen;
-window.updatePersen = updatePersen;
 window.updateInput = updateInput;
 window.lihatDetail = lihatDetail;
 window.editKomponen = editKomponen;
