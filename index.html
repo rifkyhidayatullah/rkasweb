@@ -2,136 +2,205 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>RKAS Web</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RKAS Premium | TKIT Imam Bukhari</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
 
-<div class="container">
+<div class="glass-bg"></div>
 
-  <!-- HEADER -->
-  <div class="header">
-    <img src="img/LOGO TKIT IMAM BUKHARI.png" class="logo">
-    <h2>RKAS TK Imam Bukhari</h2>
+<div class="dashboard-wrapper">
+  <aside class="sidebar" data-aos="fade-right">
+    <div class="brand">
+      <img src="img/LOGO TKIT IMAM BUKHARI.png" class="logo-premium">
+      <h1>RKAS<span>PRO</span></h1>
+    </div>
+    <div class="sidebar-clock-wrapper">
+    <div class="glass-clock">
+      <div class="clock-section">
+        <span id="txt-jam">00:00:00</span>
+      </div>
+      <div class="date-section">
+        <span id="txt-tanggal">Memuat...</span>
+      </div>
+    </div>
   </div>
+  </aside>
 
-  <!-- PAGU -->
- <div class="pagu-box">
-  <div class="left">
-    <label>Tahun Ajaran:</label>
-    <input type="text" id="tahunAjaran" placeholder="2025/2026" onchange="simpanData()">
+  <main class="main-content">
+    
+    <header class="top-bar" data-aos="fade-down">
+  <div class="header-premium">
+    <div class="header-content">
+      <div class="header-left-banner">
+        <div class="logo-wrapper">
+          <img src="img/LOGO TKIT IMAM BUKHARI.png" class="logo-glow">
+        </div>
+        <div class="title-wrapper">
+          <span class="sub-title">SISTEM MANAJEMEN ANGGARAN</span>
+          <h2 class="main-title">RKAS TKIT IMAM BUKHARI</h2>
+          <div class="title-underline"></div>
+        </div>
+      </div>
 
-    <label>Pagu:</label>
-    <input type="text" id="paguInput" oninput="formatInput(this)" onchange="updatePagu()">
-
-    <span>Tahap 1: <b id="tahap1">0</b></span>
-    <span>Tahap 2: <b id="tahap2">0</b></span>
+      <div class="header-right-inputs">
+        <div class="input-group-premium">
+          <label><i class="fas fa-calendar-alt"></i> Tahun Ajaran</label>
+          <input type="text" id="tahunAjaran" placeholder="2025/2026" onchange="simpanData()">
+        </div>
+        <div class="input-group-premium">
+          <label><i class="fas fa-wallet"></i> Pagu Dana</label>
+          <input type="text" id="paguInput" oninput="formatInput(this)" onchange="updatePagu()">
+        </div>
+      </div>
+    </div>
   </div>
+</header>
 
-  <div class="right" id="jam"></div>
+    <section class="stats-grid">
+      <div class="stat-card" data-aos="zoom-in" data-aos-delay="100">
+        <div class="icon-box"><i class="fas fa-chart-line"></i></div>
+        <div class="stat-info">
+          <h3>Total Digunakan</h3>
+          <p id="totalInput">Rp 0</p>
+        </div>
+      </div>
+      <div class="stat-card" data-aos="zoom-in" data-aos-delay="200">
+        <div class="icon-box danger"><i class="fas fa-vault"></i></div>
+        <div class="stat-info">
+          <h3>Sisa Dana</h3>
+          <p id="sisaDana">Rp 0</p>
+        </div>
+      </div>
+      <div class="stat-card" data-aos="zoom-in" data-aos-delay="300">
+        <div class="icon-box info"><i class="fas fa-layer-group"></i></div>
+        <div class="stat-info">
+          <h3>Tahap 1 & 2</h3>
+          <small>T1: <b id="tahap1">0</b></small><br>
+          <small>T2: <b id="tahap2">0</b></small>
+        </div>
+      </div>
+    </section>
+
+    <div class="content-card" data-aos="fade-up">
+      <div class="card-header">
+        <h3><i class="fas fa-list"></i> Daftar Komponen Anggaran</h3>
+        <button class="btn-primary" onclick="tambahKomponen()">
+          <i class="fas fa-plus"></i> Tambah Komponen
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Komponen</th>
+              <th>Status</th>
+              <th>Persentase</th>
+              <th>Total Input</th>
+              <th style="text-align: center;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid-two-cols">
+      <div class="content-card" data-aos="fade-right">
+        <div class="card-header"><h3>📊 Distribusi Anggaran</h3></div>
+        <div class="chart-container">
+          <canvas id="myChart"></canvas>
+          <div id="legendCustom" class="legend-grid"></div>
+        </div>
+      </div>
+
+      <div class="content-card" data-aos="fade-left">
+        <div class="card-header"><h3>🚀 Alat & Ekspor</h3></div>
+        <div class="action-grid">
+          <button class="btn-action excel" onclick="exportExcel()">
+            <i class="fas fa-file-excel"></i> Export ke Excel
+          </button>
+          
+          <div class="drop-zone" id="dropZone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag Excel di sini</p>
+            <button onclick="document.getElementById('fileInput').click()">Pilih File</button>
+            <input type="file" id="fileInput" accept=".xlsx" hidden>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="previewBox" class="content-card" style="display:none;" data-aos="zoom-in">
+      <div class="card-header"><h3>Preview Import Data</h3></div>
+      <div class="table-responsive">
+        <table id="previewTable"></table>
+      </div>
+      <button class="btn-confirm" onclick="confirmImport()">✅ Konfirmasi & Import</button>
+    </div>
+  </main>
 </div>
-  <!-- TABLE -->
-  <table>
-    <thead>
-      <tr>
-        <th>Komponen</th>
-        <th>🔋</th>
-        <th>%</th>
-        <!-- <th>Besaran</th> -->
-        <th>Input</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-  </table>
 
-  <button onclick="tambahKomponen()" style="background-color: #007bff;; color: white; border-radius: 5px; border-color: #007bff; margin-bottom: 20px;">＋ Tambah Komponen</button>
-
-  <!-- CARD -->
-<div class="summary-container">
-  <div class="card summary">
-    <h3>Total Digunakan</h3>
-    <p id="totalInput">Rp 0</p>
-  </div>
-
-  <div class="card summary">
-    <h3>Sisa Dana</h3>
-    <p id="sisaDana">Rp 0</p>
-  </div>
-</div>
-
-<!-- CHART -->
-<div class="card chart-card">
-  <div class="card-header">
-    📊 Distribusi Anggaran
-  </div>
-
-  <div class="chart-wrapper">
-    <canvas id="myChart"></canvas>
-  </div>
-
-  <div id="legendCustom" class="legend"></div>
-</div>
-
-<canvas id="chart"></canvas>
-  <button onclick="exportExcel()" style="background-color: #007bff;; color: white; border-radius: 5px; border-color: #007bff;">📊 Export Excel</button>
-  <div class="import-box" id="dropZone">
-  <p>📂 Drag & Drop Excel di sini</p>
-  <button onclick="document.getElementById('fileInput').click()">
-    Upload Excel
-  </button>
-  <input type="file" id="fileInput" accept=".xlsx" hidden>
-</div>
-
-<!-- PREVIEW -->
-<div id="previewBox" style="display:none;">
-  <h3>Preview Data</h3>
-  <table id="previewTable"></table>
-  <button onclick="confirmImport()">✅ Import Sekarang</button>
-</div>
-</div>
-
-<!-- MODAL -->
 <div id="modal" class="modal">
-  <div class="modal-content big">
-    <h3 id="modalTitle"></h3>
+  <div class="modal-content-premium">
+    <div class="modal-header-glass">
+      <div class="modal-title-area">
+        <i class="fas fa-folder-open"></i>
+        <div>
+          <h2 id="modalTitle">Detail Komponen</h2>
+          <span class="badge-status">Pengelolaan Anggaran Aktif</span>
+        </div>
+      </div>
+      <div class="modal-controls">
+        <button class="btn-control-icon save" onclick="simpanData()" title="Simpan Data"><i class="fas fa-save"></i></button>
+        <button class="btn-control-icon close" onclick="closeModal()" title="Tutup"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
 
-    <table>
-      <thead>
-        <tr>
-      <th>No</th>
-      <th>Nama Barang/Jasa</th>
-      <th>Sub</th>
-      <th>Kegiatan</th>
-      <th>Uraian</th>
-      <th>Qty</th>
-      <th>Harga</th>
-      <th>Jumlah</th>
-      <th>Tanggal</th>
-      <th>Keterangan</th>
-      <th>Bukti</th>
-      <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody id="detailTable"></tbody>
-    </table>
-    <div style="margin-top:10px; text-align:right;">
-  <b>Total: <span id="totalDetail">Rp 0</span></b>
-</div>
-    <div class="modal-actions">
-  <button class="btn-add" onclick="tambahItem()">＋</button>
-  <button class="btn-save" onclick="simpanData()">💾</button>
-  <button class="btn-close" onclick="closeModal()">✖</button>
-</div>
+    <div class="modal-body-premium">
+      <div class="detail-actions-bar">
+        <button class="btn-glow-add" onclick="tambahItem()">
+          <i class="fas fa-plus-circle"></i> Tambah Item Baru
+        </button>
+        <div class="running-total">
+          <small>Subtotal Komponen:</small>
+          <h3 id="totalDetail">Rp 0</h3>
+        </div>
+      </div>
+
+      <div class="table-container-modern">
+        <table class="premium-table">
+          <thead>
+            <tr>
+              <th width="50">No</th>
+              <th>Informasi Barang / Jasa</th>
+              <th>Detail Uraian</th>
+              <th width="120">Qty</th>
+              <th width="180">Harga Satuan</th>
+              <th width="180">Total Harga</th>
+              <th>Tanggal</th>
+              <th>Bukti & Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="detailTable"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
+
 <div id="imageModal" class="img-modal" onclick="closePreview()">
   <img id="modalImg" class="img-content">
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Firebase -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>AOS.init({ duration: 800, once: true });</script>
 <script type="module" src="script.js"></script>
 </body>
 </html>
