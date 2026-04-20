@@ -144,20 +144,31 @@ async function updatePagu() {
 }
 
 function updateJam() {
-  const now = new Date();
+    const now = new Date();
+    
+    // Format Jam: 00:00:00
+    const jam = now.getHours().toString().padStart(2, '0');
+    const menit = now.getMinutes().toString().padStart(2, '0');
+    const detik = now.getSeconds().toString().padStart(2, '0');
+    
+    // Format Tanggal: Senin, 20 Apr 2026
+    const opsiTanggal = { 
+        weekday: 'long', 
+        day: '2-digit', 
+        month: 'short', 
+        year: 'numeric' 
+    };
+    const tanggalStr = now.toLocaleDateString("id-ID", opsiTanggal);
 
-  const jam = now.toLocaleTimeString("id-ID");
-  const tanggal = now.toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric"
-  });
-
-  document.getElementById("jam").innerHTML = `
-    <div>📅 ${tanggal}</div>
-    <div>⏰ ${jam}</div>
-  `;
+    // Update Elemen
+    const elJam = document.getElementById("txt-jam");
+    const elTgl = document.getElementById("txt-tanggal");
+    
+    if(elJam) elJam.innerText = `${jam}:${menit}:${detik}`;
+    if(elTgl) elTgl.innerText = tanggalStr;
 }
+
+// Jalankan interval
 setInterval(updateJam, 1000);
 updateJam();
 
@@ -420,98 +431,125 @@ function formatAngka(angka) {
 let chart;
 
 function renderChart() {
-  const ctx = document.getElementById("myChart");
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const labels = data.map(item => item.nama);
+    const values = data.map(item => parseAngka(item.input) || 0);
+    
+    // Auto-generate warna sebanyak jumlah komponen
+    const dynamicColors = generateDynamicColors(data.length);
 
-  if (!ctx) return;
-
-  let labels = data.map(d => d.nama);
-  let values = data.map(d => parseAngka(d.input));
-
-  let colors = [
-    "#22c55e", "#3b82f6", "#f59e0b",
-    "#ef4444", "#8b5cf6", "#14b8a6", "#9d429d", "#42919d", "#429d83", "#8f9d42",
-    "#6a9d42", "#9d4263", "#4e429d", "#429d6b", "#749d42", "#3b5d11", "#f0c953"
-  ];
-
-  if (window.myChartObj) {
-    window.myChartObj.destroy();
-  }
-
-  window.myChartObj = new Chart(ctx, {
-    type: "pie",
-    data: {
-      labels: labels,
-      datasets: [{
-        data: values,
-        backgroundColor: colors
-      }]
-    },
-    options: {
-      plugins: {
-        legend: {
-          display: false // 🔥 matiin bawaan
-        }
-      }
+    if (window.chartInstance) {
+        window.chartInstance.destroy();
     }
-  });
 
-  renderLegend(labels, colors); // 🔥 custom legend
+    window.chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: dynamicColors,
+                borderWidth: 0,
+                hoverOffset: 20
+            }]
+        },
+        options: {
+            cutout: '75%',
+            plugins: {
+                legend: { display: false } // Legend kita buat custom di bawah
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true
+            }
+        }
+    });
+
+    // 3. Render Legend Custom (Warna Otomatis)
+    const legendContainer = document.getElementById('legendCustom');
+    legendContainer.innerHTML = '';
+    data.forEach((item, i) => {
+        legendContainer.innerHTML += `
+            <div class="legend-item" data-aos="fade-left" data-aos-delay="${i * 50}">
+                <span class="dot" style="background: ${dynamicColors[i]}"></span>
+                <span class="label">${item.nama}</span>
+            </div>
+        `;
+    });
+}
+
+function generateDynamicColors(count) {
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+        // Menggunakan rotasi Hue (360/count) agar warna tersebar merata
+        // Saturation 70% dan Lightness 60% agar warna cerah & modern
+        const hue = (i * (360 / count)) % 360;
+        colors.push(`hsl(${hue}, 70%, 60%)`);
+    }
+    return colors;
 }
 
 // ================= RENDER TABLE =================
+// Ganti bagian akhir fungsi render() Anda untuk menyesuaikan dengan baris tabel premium
 function render() {
   let tbody = document.getElementById("tableBody");
   tbody.innerHTML = "";
-
-  let totalInput = 0;
-
-  // 🔥 WAJIB ADA (fix bug)
-  let totalSemua = data.reduce((sum, item) => {
-    return sum + parseAngka(item.input);
-  }, 0);
+  let totalInputVal = 0;
+  let totalSemua = data.reduce((sum, item) => sum + parseAngka(item.input), 0);
 
   data.forEach((item, i) => {
     let input = parseAngka(item.input) || 0;
-
     let persen = pagu ? (input / pagu * 100) : 0;
-
-    totalInput += input;
+    totalInputVal += input;
 
     let row = `
-      <tr>
-        <td>${item.nama}</td>
-
+      <tr class="table-row" data-aos="fade-up">
+        <td style="font-weight: bold; color: #291056;">${item.nama}</td>
         <td>
           <div class="progress">
             <div class="progress-bar" style="width:${persen}%"></div>
           </div>
         </td>
-
-        <td class="persen">
-          ${persen.toFixed(1)}%
-        </td>
-
+        <td class="persen" data-target="${persen.toFixed(1)}">0%</td>
         <td class="rupiah">
-  ${formatRupiah(input)}
-  <div class="hint">auto dari detail</div>
-</td>
-
-        <td>
-          <button onclick="lihatDetail('${item.nama}')">🔍</button>
-          <button onclick="editKomponen(${i})">✍</button>
-          <button onclick="hapusKomponen(${i})">✖</button>
+           <strong>${formatRupiah(input)}</strong>
+        </td>
+        <td class="aksi-group-modern">
+          <button class="btn-icon view" onclick="lihatDetail('${item.nama}')" title="Detail">
+          <i class="fas fa-eye"></i>
+        </button>
+        <button class="btn-icon edit" onclick="editKomponen(${i})" title="Edit">
+          <i class="fas fa-pen-nib"></i>
+        </button>
+        <button class="btn-icon delete" onclick="hapusKomponen(${i})" title="Hapus">
+          <i class="fas fa-trash-alt"></i>
+        </button>
         </td>
       </tr>
     `;
-
     tbody.innerHTML += row;
   });
 
-  let sisa = pagu - totalSemua;
+  // Animasi Angka Berjalan (Counter)
+  document.querySelectorAll('.persen').forEach(el => {
+    const target = parseFloat(el.getAttribute('data-target'));
+    let current = 0;
+    const increment = target / 25; // Kecepatan gerak
+    
+    const updateCount = () => {
+      if (current < target) {
+        current += increment;
+        el.innerText = current.toFixed(1) + '%';
+        requestAnimationFrame(updateCount); // Lebih smooth daripada setTimeout
+      } else {
+        el.innerText = target.toFixed(1) + '%';
+      }
+    };
+    updateCount();
+  });
 
-  document.getElementById("totalInput").innerText = formatRupiah(totalInput);
-  document.getElementById("sisaDana").innerText = formatRupiah(sisa);
-
+  document.getElementById("totalInput").innerText = formatRupiah(totalInputVal);
+  document.getElementById("sisaDana").innerText = formatRupiah(pagu - totalInputVal);
   renderChart();
 }
 
@@ -609,73 +647,49 @@ function autoResize(el) {
 function renderDetail() {
   let table = document.getElementById("detailTable");
   table.innerHTML = "";
-
   let list = detailData[currentKomponen] || [];
   let totalSemua = 0;
 
   list.forEach((item, i) => {
-    let jumlah = (item.satuan || 0) * (item.harga || 0); // 🔥 karena dianggap 1
-    item.jumlah = jumlah;
-
-    totalSemua += jumlah; // 🔥 HITUNG TOTAL
+    let jumlah = (item.satuan || 0) * (item.harga || 0);
+    totalSemua += jumlah;
 
     let row = `
       <tr>
-        <td>${i + 1}</td>
-
-        <td><input value="${item.namaBarang || ''}" onchange="updateDetail(${i}, 'namaBarang', this.value)"></td>
-        <td><input value="${item.sub}" onchange="updateDetail(${i}, 'sub', this.value)"></td>
-        <td><input value="${item.kegiatan}" onchange="updateDetail(${i}, 'kegiatan', this.value)"></td>
+        <td align="center"><strong>${i + 1}</strong></td>
         <td>
-  <textarea 
-    class="uraian"
-    onchange="updateDetail(${i}, 'uraian', this.value)"
-    oninput="autoResize(this)"
-  >${item.uraian || ''}</textarea>
-</td>
-        
+          <input type="text" placeholder="Nama Barang" value="${item.namaBarang || ''}" onchange="updateDetail(${i}, 'namaBarang', this.value)">
+          <div style="margin-top:5px; font-size:10px; color:#94a3b8">Kategori: ${currentKomponen}</div>
+        </td>
+        <td>
+          <input type="text" placeholder="Sub/Kegiatan" value="${item.sub || ''}" onchange="updateDetail(${i}, 'sub', this.value)" style="margin-bottom:5px">
+          <textarea placeholder="Uraian" onchange="updateDetail(${i}, 'uraian', this.value)">${item.uraian || ''}</textarea>
+        </td>
         <td><input type="number" value="${item.satuan || 0}" onchange="updateDetail(${i}, 'satuan', this.value)"></td>
         <td><input type="number" value="${item.harga || 0}" onchange="updateDetail(${i}, 'harga', this.value)"></td>
-
-        <td>${formatRupiah(jumlah)}</td>
-
+        <td style="color:var(--primary); font-weight:800">${formatRupiah(jumlah)}</td>
         <td><input type="date" value="${item.tanggal}" onchange="updateDetail(${i}, 'tanggal', this.value)"></td>
         <td>
-  <textarea 
-    class="keterangan"
-    onchange="updateDetail(${i}, 'keterangan', this.value)"
-    oninput="autoResize(this)"
-  >${item.keterangan || ''}</textarea>
-</td>
-        <td>
-   ${item.bukti ? `
-    <img src="${item.bukti}" class="preview-img" 
-      onclick="openPreview('${item.bukti}')">
-  ` : "-"}
-
-  <input type="file" id="file${i}" hidden onchange="uploadBukti(${i}, this)">
-
-<button onclick="document.getElementById('file${i}').click()" class="btn-upload">
-  📎 Upload Bukti
-</button>
-</td>
-<td>
-  <div class="aksi-group">
-    ${item.bukti ? `<button onclick="hapusBukti(${i})">🚮</button>` : ""}
-    <button onclick="hapusItem(${i})" >❌</button>
-  </div>
-  </td>
+          <div class="aksi-group-modern">
+            ${item.bukti ? `
+              <img src="${item.bukti}" class="preview-img" onclick="openPreview('${item.bukti}')">
+              <button class="btn-tiny-del" onclick="hapusBukti(${i})"><i class="fas fa-eraser"></i></button>
+            ` : `
+              <button class="btn-upload-modern" onclick="document.getElementById('file${i}').click()">
+                <i class="fas fa-paperclip"></i> Upload
+              </button>
+            `}
+            <input type="file" id="file${i}" hidden onchange="uploadBukti(${i}, this)">
+            <button class="btn-tiny-del danger" onclick="hapusItem(${i})"><i class="fas fa-trash-alt"></i></button>
+          </div>
+        </td>
       </tr>
     `;
-
     table.innerHTML += row;
   });
 
-  // 🔥 TAMPILKAN TOTAL
   document.getElementById("totalDetail").innerText = formatRupiah(totalSemua);
-
-  setTimeout(syncKeUtama, 0);
-  console.log("TOTAL SEMUA:", totalSemua);  
+  syncKeUtama(); // Pastikan data terupdate ke dashboard utama
 }
 
 function zoomGambar(url) {
