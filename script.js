@@ -48,79 +48,80 @@ fileInput.addEventListener("change", (e) => {
 });
 
 // ================= HANDLE FILE =================
-function handleFile(file) {
+window.handleFile = function(file) {
   const reader = new FileReader();
-
   reader.onload = function(e) {
     const dataExcel = new Uint8Array(e.target.result);
     const workbook = XLSX.read(dataExcel, { type: 'array' });
 
-    previewRekap = XLSX.utils.sheet_to_json(workbook.Sheets["Rekap"]);
-    previewDetail = XLSX.utils.sheet_to_json(workbook.Sheets["Detail"]);
+    // Ambil sheet pertama untuk rekap, kedua untuk detail (asumsi standar)
+    previewRekap = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+    previewDetail = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[1]]);
 
-    showPreview();
+    showPreview(); // Memunculkan #previewBox yang ada di index.html
   };
-
   reader.readAsArrayBuffer(file);
-}
-
+};
 function toNumber(val) {
   if (!val) return 0;
   return Number(String(val).replace(/[^0-9]/g, "")) || 0;
 }
 
-function showPreview() {
+window.showPreview = function() {
   const table = document.getElementById("previewTable");
-  table.innerHTML = "";
+  const box = document.getElementById("previewBox");
+  if (!table || !box) return;
 
+  table.innerHTML = `<thead><tr><th>Komponen</th><th>Persen</th><th>Input</th></tr></thead>`;
+  
   previewRekap.forEach(row => {
-    let tr = `<tr>
-      <td>${row["Komponen"]}</td>
-      <td>${row["%"]}</td>
-      <td>${row["Input"]}</td>
-    </tr>`;
-    table.innerHTML += tr;
+    table.innerHTML += `
+      <tr>
+        <td>${row["Komponen"] || row["KOMPONEN"] || "-"}</td>
+        <td>${row["%"] || "0%"}</td>
+        <td>${formatRupiah(toNumber(row["Input"] || row["Input"]))}</td>
+      </tr>`;
   });
 
-  document.getElementById("previewBox").style.display = "block";
-}
+  box.style.display = "block"; // Munculkan box preview
+  box.scrollIntoView({ behavior: 'smooth' });
+};
 
 async function confirmImport() {
-  // ================= REKAP
+  if (previewRekap.length === 0) return alert("Gak ada data buat diimport, Wir!");
+
+  // 1. Proses Rekap (Dashboard Utama)
   data = previewRekap.map(row => ({
-    nama: row["Komponen"],
-    persen: toNumber(row["%"]) || 0,
-    input: toNumber(row["Input"])
+    nama: row["Komponen"] || row["KOMPONEN"],
+    persen: toNumber(row["%"]),
+    input: toNumber(row["Input"] || row["TERPAKAI"])
   }));
 
-  // ================= DETAIL
+  // 2. Proses Detail (Rincian Barang)
   detailData = {};
-
   previewDetail.forEach(row => {
-    const nama = row["Komponen"];
+    const namaKomp = row["Komponen"] || row["KOMPONEN"];
+    if (!namaKomp) return;
 
-    if (!detailData[nama]) {
-      detailData[nama] = [];
-    }
+    if (!detailData[namaKomp]) detailData[namaKomp] = [];
 
-    console.log("IMPORT ROW:", row); // 🔥 DEBUG
-
-    detailData[nama].push({
-      namaBarang: row["Nama Barang/Jasa"] || "",
-      sub: row["Sub"] || "",
-      kegiatan: row["Kegiatan"] || "",
-      uraian: row["Uraian"] || "", // 🔥 INI YANG BENAR
-satuan: toNumber(row["Qty"]),
-harga: toNumber(row["Harga"]),
-      tanggal: row["Tanggal"] || "",
-      keterangan: row["Keterangan"] || ""
+    detailData[namaKomp].push({
+      namaBarang: row["Nama Barang/Jasa"] || row["NAMA BARANG"] || row["Item"] || "-",
+      sub: row["Sub"] || row["SUB"] || "",
+      uraian: row["Uraian"] || row["URAIAN"] || "-",
+      satuan: toNumber(row["Qty"] || row["QTY"]),
+      harga: toNumber(row["Harga"] || row["HARGA"]),
+      tanggal: row["Tanggal"] || new Date().toISOString().split('T')[0],
+      bukti: "" // Bukti baru kosong dulu
     });
   });
 
-  render();
-  await simpanData();
+  // 3. Finalisasi
+  render(); // Update tampilan dashboard
+  await simpanData(); // Langsung auto-save ke Firebase
 
-  alert("Import sukses 🔥");
+  document.getElementById("previewBox").style.display = "none";
+  alert("Import Sukses & Tersimpan ke Database! 🔥");
 }
 
 // ================= FORMAT =================
@@ -230,199 +231,209 @@ async function importExcel(event) {
 
 window.importExcel = importExcel;
 
-async function exportExcel() {
-  const workbook = new ExcelJS.Workbook();
-
-  // ================= CONFIG (EDIT SENDIRI) =================
-  const sekolah = "TK Imam Bukhori";
-  const kota = "Bekasi";
-  const provinsi = "Jawa Barat";
-  const dana = "BOP";
-  const tahunInput = document.getElementById("tahunAjaran");
-const tahun = tahunInput ? tahunInput.value : "-";
-
-  // ================= SHEET REKAP =================
-  const sheet1 = workbook.addWorksheet("Rekap");
-
-  // 🧾 HEADER
-  sheet1.mergeCells("A1:E1");
-  sheet1.getCell("A1").value = "LAPORAN RKAS";
-  sheet1.getCell("A1").font = { size: 16, bold: true };
-  sheet1.getCell("A1").alignment = { horizontal: "center" };
-
-  sheet1.mergeCells("A2:E2");
-  sheet1.getCell("A2").value = "TAHUN ANGGARAN " + tahun;
-  sheet1.getCell("A2").alignment = { horizontal: "center" };
-
-  sheet1.addRow([]);
-  sheet1.addRow(["Nama Sekolah", ":", sekolah]).font ={bold: true};
-  sheet1.addRow(["Kab/Kota", ":", kota]).font ={bold: true};
-  sheet1.addRow(["Provinsi", ":", provinsi]).font ={bold: true};
-  sheet1.addRow(["Sumber Dana", ":", dana]).font ={bold: true};
-
-  sheet1.addRow([]);
-
-  // 📊 HEADER TABLE
-  sheet1.addRow(["Komponen", "%", "Input"]);
-
-  let totalInput = 0;
-
-  data.forEach(item => {
-      let persen = toNumber(item.persen);
-    let input = toNumber(item.input);
+window.exportExcel = async function() {
+    const workbook = new ExcelJS.Workbook();
+    const tahun = document.getElementById("inputTahunAjaran").value || "2025/2026";
+    const namaTK = "TKIT IMAM BUKHARI"; // Branding sekolah
     
+    // --- SHEET 1: REKAPITULASI (Tanpa Kolom Keterangan) ---
+    const sheet1 = workbook.addWorksheet('Rekap Anggaran');
+    
+    // Header Judul
+    sheet1.mergeCells('A1:D1');
+    sheet1.getCell('A1').value = 'REKAPITULASI ANGGARAN (RKAS)';
+    sheet1.getCell('A1').font = { size: 14, bold: true };
+    sheet1.getCell('A1').alignment = { horizontal: 'center' };
 
-    totalInput += input;
+    sheet1.mergeCells('A2:D2');
+    sheet1.getCell('A2').value = namaTK + " - TA " + tahun;
+    sheet1.getCell('A2').font = { size: 11, bold: true };
+    sheet1.getCell('A2').alignment = { horizontal: 'center' };
+    sheet1.addRow([]); // Spasi
 
-    sheet1.addRow([
-      item.nama,
-      persen,
-      input
-  
-    ]);
-  });
-
-let sisaDana = pagu - totalInput;
-
-  sheet1.addRow([]);
-  sheet1.addRow(["SISA DANA", "", sisaDana]);
-  sheet1.addRow(["TOTAL", "", totalInput]);
-
-  // 🎨 STYLE HEADER TABLE
-  sheet1.getRow(9).eachCell(cell => {
-    cell.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "2E7D32" } // hijau elegan
-    };
-    cell.font = { bold: true, color: { argb: "FFFFFF" } };
-    cell.alignment = { horizontal: "center" };
-  });
-
-  // 📏 FORMAT ANGKA
-  sheet1.columns = [
-    { width: 30 },
-    { width: 10 },
-    { width: 20 }
-
-  ];
-
-  sheet1.eachRow((row, rowNumber) => {
-    if (rowNumber >= 10) {
-      row.getCell(3).numFmt = '"Rp" #,##0';
-    }
-  });
-
-  // ================= SHEET DETAIL =================
-  const sheet2 = workbook.addWorksheet("Detail");
-
-  sheet2.mergeCells("A1:H1");
-  sheet2.getCell("A1").value = "DETAIL RKAS";
-  sheet2.getCell("A1").font = { size: 16, bold: true };
-  sheet2.getCell("A1").alignment = { horizontal: "center" };
-
-  sheet2.addRow([]);
-
-  sheet2.addRow([
-    "Komponen",
-    "Nama Barang",
-    "Uraian",
-    "Qty",
-    "Harga",
-    "Jumlah",
-    "Tanggal",
-    "Keterangan"
-  ]);
-
-  let grandTotal = 0;
-
-  Object.keys(detailData).forEach(nama => {
-    sheet2.addRow([nama]);
-
-    let subtotal = 0;
-
-    detailData[nama].forEach(item => {
-      let qty = Number(item.satuan) || 0;
-let harga = Number(item.harga) || 0;
-let jumlah = qty * harga;
-      subtotal += jumlah;
-      grandTotal += jumlah;
-
-      sheet2.addRow([
-        "",
-        item.namaBarang,
-        item.uraian,
-        item.satuan,
-        item.harga,
-        jumlah,
-        item.tanggal,
-        item.keterangan + (item.bukti ? " | Bukti: " + item.bukti : "")
-      ]);
+    // Header Tabel Rekap (Hanya 4 Kolom Utama)
+    const headerRekap = ['NO', 'NAMA KOMPONEN', 'PERSENTASE', 'TOTAL ANGGARAN'];
+    const rowHeader1 = sheet1.addRow(headerRekap);
+    rowHeader1.eachCell(cell => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF333333' } };
+        cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+        cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
     });
 
-    // 🔥 SUBTOTAL
-    sheet2.addRow(["", "", "", "Subtotal", subtotal]);
-    sheet2.addRow([]);
-  });
-
-  // 🔥 GRAND TOTAL
-  sheet2.addRow(["", "", "", "GRAND TOTAL", grandTotal]);
-
-  // 🎨 HEADER DETAIL
-  sheet2.getRow(3).eachCell(cell => {
-    cell.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "1565C0" } // biru elegan
-    };
-    cell.font = { bold: true, color: { argb: "FFFFFF" } };
-  });
-
-sheet2.columns = [
-  { width: 20 }, // Komponen
-  { width: 25 }, // Nama Barang
-  { width: 30 }, // Uraian
-  { width: 10 }, // Qty
-  { width: 20 }, // Harga
-  { width: 20 }, // Jumlah
-  { width: 15 }, // Tanggal
-  { width: 25 }  // Keterangan
-];
-
-  // FORMAT RUPIAH
-  sheet2.eachRow((row, i) => {
-    if (i >= 4) {
-      row.getCell(4).numFmt = '"Rp" #,##0';
-      row.getCell(5).numFmt = '"Rp" #,##0';
-    }
-  });
-
-  // 📏 BORDER
-  function border(sheet) {
-    sheet.eachRow(row => {
-      row.eachCell(cell => {
-        cell.border = {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" }
-        };
-      });
+    // Isi Data Rekap
+    data.forEach((k, i) => {
+        const row = sheet1.addRow([
+            i + 1, 
+            k.nama, 
+            (k.input / (pagu || 1) * 100).toFixed(1) + '%', 
+            k.input
+        ]);
+        row.getCell(4).numFmt = '#,##0';
+        row.eachCell(c => c.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} });
     });
-  }
 
-  border(sheet1);
-  border(sheet2);
+    // --- SHEET 2: DETAIL RINCIAN (Redesign Total & Rapi) ---
+    const sheet2 = workbook.addWorksheet('Detail Rincian');
+    
+    // Judul Besar
+    sheet2.mergeCells('A1:G1');
+    sheet2.getCell('A1').value = 'DAFTAR RINCIAN PENGGUNAAN DANA';
+    sheet2.getCell('A1').font = { size: 14, bold: true };
+    sheet2.addRow(['Tahun Ajaran: ' + tahun]);
+    sheet2.addRow([]); 
 
-  // 💾 DOWNLOAD
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer]);
+    // Header Tabel Detail
+    const headerDetail = ['NO', 'TANGGAL', 'NAMA BARANG / JASA', 'URAIAN', 'QTY', 'HARGA', 'TOTAL'];
+    const rowHeader2 = sheet2.addRow(headerDetail);
+    rowHeader2.eachCell(cell => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF22D3EE' } };
+        cell.font = { bold: true };
+        cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+    });
 
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "RKAS_PRO.xlsx";
-  a.click();
+    // Looping per Komponen agar terkelompok rapi
+    Object.keys(detailData).forEach(komponenNama => {
+        // Baris Pemisah Komponen
+        const compRow = sheet2.addRow(['KOMPONEN: ' + komponenNama]);
+        sheet2.mergeCells(`A${compRow.number}:G${compRow.number}`);
+        compRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } };
+        compRow.getCell(1).font = { bold: true };
+
+        const items = detailData[komponenNama] || [];
+        items.forEach((item, idx) => {
+            const row = sheet2.addRow([
+                idx + 1,
+                item.tanggal || "-",
+                item.namaBarang || "-",
+                item.uraian || "-",
+                item.satuan || 0,
+                item.harga || 0,
+                (item.satuan || 0) * (item.harga || 0)
+            ]);
+            
+            // Format angka & Border
+            row.getCell(6).numFmt = '#,##0';
+            row.getCell(7).numFmt = '#,##0';
+            row.eachCell(c => c.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} });
+        });
+    });
+
+    // Set Lebar Kolom Otomatis
+    sheet1.columns = [{width: 5}, {width: 40}, {width: 15}, {width: 25}];
+    sheet2.columns = [{width: 5}, {width: 15}, {width: 30}, {width: 35}, {width: 10}, {width: 20}, {width: 25}];
+
+    // --- DOWNLOAD ---
+const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `RKAS_${namaTK.replace(/ /g, '_')}_${tahun.replace(/\//g, '-')}.xlsx`;
+    
+    // Proses download
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    window.URL.revokeObjectURL(url);
+
+    alert("Export Selesai! Detail sudah rapi. 🔥");
+};
+// --- LOGIKA MODAL GANTI PIN ---
+window.openPinModal = () => {
+    document.getElementById('pinModal').style.display = 'flex';
+};
+
+window.closePinModal = () => {
+    document.getElementById('pinModal').style.display = 'none';
+};
+
+// Di dalam script arsip.html
+async function loadDataArsip() {
+    // 1. Cek elemen input (kita cari ID lama 'selectTahun' ATAU ID baru 'inputTahunAjaran')
+    const inputEl = document.getElementById("selectTahun") || 
+                    document.getElementById("inputTahunAjaran") || 
+                    document.getElementById("cariTahunArsip");
+
+    // Jika elemen tidak ditemukan sama sekali di HTML
+    if (!inputEl) {
+        console.error("Error: Elemen input tahun ajaran tidak ditemukan di HTML!");
+        alert("Sistem error: Elemen input tidak ditemukan.");
+        return;
+    }
+
+    const tahunRaw = inputEl.value.trim();
+    if (!tahunRaw) {
+        alert("Harap masukkan Tahun Ajaran (Contoh: 2025/2026)");
+        return;
+    }
+
+    // 2. Bersihkan karakter '/' menjadi '-' agar bisa dibaca Firebase
+    const tahunID = tahunRaw.replace(/\//g, "-");
+    
+    const display = document.getElementById("arsipDisplay");
+    if (display) display.innerHTML = "<p style='color: white;'>Membongkar arsip...</p>";
+
+    try {
+        // Ambil data dari koleksi rkas_arsip
+        const docRef = doc(db, "rkas_arsip", tahunID);
+        const snap = await getDoc(docRef);
+
+        if (snap.exists()) {
+            const d = snap.data();
+            
+            // Tampilkan Data ke layar
+            if (display) {
+                display.innerHTML = `
+                    <div class="card-arsip" style="background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; border: 1px solid #22d3ee;">
+                        <h2 style="color: #22d3ee;">Tahun Ajaran: ${d.tahun_ajaran}</h2>
+                        <h3 style="color: #fbbf24;">Total Pagu: Rp ${d.total_pagu.toLocaleString()}</h3>
+                        <div style="margin-top: 20px;">
+                            ${renderKomponenArsip(d.data_komponen, d.detail_komponen)}
+                        </div>
+                    </div>
+                `;
+            }
+            alert("Data Berhasil Ditemukan! 🔥");
+        } else {
+            if (display) display.innerHTML = `<p style="color: #ff4444;">Data tahun ${tahunRaw} tidak ditemukan.</p>`;
+        }
+    } catch (err) {
+        console.error("Error Firebase:", err);
+        alert("Gagal koneksi ke database!");
+    }
 }
+
+// --- PROSES GANTI PIN KE FIREBASE ---
+async function processChangePin() {
+    const oldPin = document.getElementById("oldPin").value;
+    const newPin = document.getElementById("newPin").value;
+    const confirmPin = document.getElementById("confirmNewPin").value;
+
+    if (!oldPin || !newPin || !confirmPin) return alert("Isi semua kolom, Wir!");
+    if (newPin !== confirmPin) return alert("Konfirmasi PIN baru gak cocok!");
+
+    try {
+        const pinRef = doc(db, "settings", "access_control");
+        const snap = await getDoc(pinRef);
+
+        if (snap.exists() && oldPin === snap.data().pin) {
+            // Update PIN baru di Firestore
+            await setDoc(pinRef, { pin: newPin }, { merge: true });
+            alert("PIN Berhasil diperbarui! 🔥");
+            closePinModal();
+            // Reset form
+            document.getElementById("oldPin").value = "";
+            document.getElementById("newPin").value = "";
+            document.getElementById("confirmNewPin").value = "";
+        } else {
+            alert("PIN Lama salah! Akses ditolak.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Gagal konek database!");
+    }
+}
+window.processChangePin = processChangePin;
 
 function formatAngka(angka) {
   return (angka || 0).toLocaleString("id-ID");
@@ -456,7 +467,7 @@ function renderChart() {
         options: {
             cutout: '75%',
             plugins: {
-                legend: { display: false } // Legend kita buat custom di bawah
+                legend: { display: false } 
             },
             animation: {
                 animateScale: true,
@@ -465,7 +476,7 @@ function renderChart() {
         }
     });
 
-    // 3. Render Legend Custom (Warna Otomatis)
+    
     const legendContainer = document.getElementById('legendCustom');
     legendContainer.innerHTML = '';
     data.forEach((item, i) => {
@@ -481,16 +492,12 @@ function renderChart() {
 function generateDynamicColors(count) {
     const colors = [];
     for (let i = 0; i < count; i++) {
-        // Menggunakan rotasi Hue (360/count) agar warna tersebar merata
-        // Saturation 70% dan Lightness 60% agar warna cerah & modern
         const hue = (i * (360 / count)) % 360;
         colors.push(`hsl(${hue}, 70%, 60%)`);
     }
     return colors;
 }
 
-// ================= RENDER TABLE =================
-// Ganti bagian akhir fungsi render() Anda untuk menyesuaikan dengan baris tabel premium
 function render() {
   let tbody = document.getElementById("tableBody");
   tbody.innerHTML = "";
@@ -529,18 +536,16 @@ function render() {
     `;
     tbody.innerHTML += row;
   });
-
-  // Animasi Angka Berjalan (Counter)
   document.querySelectorAll('.persen').forEach(el => {
     const target = parseFloat(el.getAttribute('data-target'));
     let current = 0;
-    const increment = target / 25; // Kecepatan gerak
+    const increment = target / 25; 
     
     const updateCount = () => {
       if (current < target) {
         current += increment;
         el.innerText = current.toFixed(1) + '%';
-        requestAnimationFrame(updateCount); // Lebih smooth daripada setTimeout
+        requestAnimationFrame(updateCount); 
       } else {
         el.innerText = target.toFixed(1) + '%';
       }
@@ -551,6 +556,29 @@ function render() {
   document.getElementById("totalInput").innerText = formatRupiah(totalInputVal);
   document.getElementById("sisaDana").innerText = formatRupiah(pagu - totalInputVal);
   renderChart();
+}
+
+async function arsipDataTahun() {
+    const tahun = document.getElementById("tahunAjaran").value;
+    if(!tahun) return alert("Isi Tahun Ajaran dulu, Wir!");
+
+    const confirmSave = confirm(`Simpan semua data untuk Tahun Ajaran ${tahun}?`);
+    
+    if(confirmSave) {
+        try {
+            await setDoc(doc(db, "rkas_history", tahun.replace("/", "-")), {
+                tahun: tahun,
+                pagu: pagu,
+                komponen: data,
+                detail: detailData,
+                lastUpdate: new Date()
+            });
+            alert("Data Berhasil Diarsipkan! 🔥");
+        } catch (e) {
+            console.error(e);
+            alert("Gagal simpan data, Wir.");
+        }
+    }
 }
 
 function renderLegend(labels, colors) {
@@ -743,34 +771,114 @@ function updateDetail(i, field, value) {
   setTimeout(renderDetail, 0);
 }
 
-async function simpanData() {
-  await setDoc(doc(db, "rkas", "dataUtama"), {
-    pagu: pagu,
-    komponen: data,
-    detail: detailData,
-    tahunAjaran: document.getElementById("tahunAjaran").value
-  });
+// Tambahkan/Update fungsi ini di script.js
+async function muatDataOtomatis() {
+  // Ambil apa yang ada di input tahun ajaran saat ini
+  let tahunRaw = document.getElementById("inputTahunAjaran").value.trim();
+  
+  // Jika input kosong, kita kasih default ke data terbaru atau jangan lanjut
+  if (!tahunRaw) {
+    console.log("Input tahun kosong, mencoba muat data pusat...");
+    tahunRaw = "pagu_data"; // Sesuaikan dengan nama dokumen di Firebase kamu
+  }
 
-  console.log("Auto save jalan 🔥");
+  // Bersihkan ID (Ganti / jadi -)
+  const tahunID = tahunRaw.replace(/\//g, "-");
+
+  try {
+    const docRef = doc(db, "rkas", tahunID); // Sesuaikan koleksinya 'rkas' atau 'rkas_arsip'
+    const snap = await getDoc(docRef);
+
+    if (snap.exists()) {
+      const d = snap.data();
+      pagu = d.pagu || 0;
+      data = d.data || d.data_komponen || [];
+      detailData = d.detail_komponen || d.detailData || {};
+      
+      // Update UI
+      document.getElementById("pagu-display").innerText = pagu.toLocaleString();
+      renderKomponen(); 
+      console.log("Data Berhasil Muncul!");
+    } else {
+      console.error("Data tidak ditemukan di database untuk ID: " + tahunID);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Koneksi data terhambat! Periksa koneksi internet atau config Firebase.");
+  }
+}
+// Ganti fungsi simpanData kamu dengan versi "Safety First" ini:
+async function simpanData() {
+  const inputTahun = document.getElementById("inputTahunAjaran");
+  if (!inputTahun) return; // Jaga-jaga kalau elemennya gak ketemu
+
+  let tahunRaw = inputTahun.value.trim();
+  
+  // 🔥 CEK PENTING: Kalau tahun kosong, jangan lanjut simpan!
+  if (!tahunRaw || tahunRaw === "") {
+    console.warn("Simpan dibatalkan: Tahun Ajaran kosong.");
+    return; 
+  }
+
+  // Bersihkan "/" jadi "-" untuk ID Firebase
+  const tahunID = tahunRaw.replace(/\//g, "-");
+
+  try {
+    // 1. Simpan ke data utama (Dashboard)
+    await setDoc(doc(db, "rkas", "pagu_data"), { 
+      pagu, 
+      data, 
+      detailData, 
+      tahunAjaran: tahunRaw 
+    });
+
+    // 2. Simpan ke Arsip (ID pakai tahunID yang bersih)
+    await setDoc(doc(db, "rkas_arsip", tahunID), {
+      tahun_ajaran: tahunRaw,
+      total_pagu: pagu,
+      data_komponen: data,
+      detail_komponen: detailData,
+      update_terakhir: new Date().toLocaleString("id-ID")
+    });
+
+    console.log(`Auto-Save Berhasil: ${tahunRaw}`);
+  } catch (err) {
+    console.error("Gagal Auto-Save:", err);
+  }
 }
 
 async function loadData() {
-  const docRef = doc(db, "rkas", "dataUtama");
+  // 1. Sesuaikan nama dokumen. 
+  // Jika di Firebase kamu simpan sebagai "pagu_data", ganti "dataUtama" jadi "pagu_data"
+  const docRef = doc(db, "rkas", "pagu_data"); 
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
     let d = docSnap.data();
 
     pagu = d.pagu || 0;
-    data = d.komponen || [];
-    detailData = d.detail || {};
+    // Pastikan nama field di database sama (komponen vs data_komponen)
+    data = d.komponen || d.data || []; 
+    detailData = d.detail || d.detailData || {};
 
-    document.getElementById("tahunAjaran").value = d.tahunAjaran || "";
+    // 2. CEK SAFETY ID: Pastikan ID-nya ada di index.html
+    const elTahun = document.getElementById("inputTahunAjaran") || document.getElementById("tahunAjaran");
+    if (elTahun) {
+      elTahun.value = d.tahunAjaran || "";
+    }
   }
 
-  document.getElementById("paguInput").value = formatAngka(pagu);
-  render(); 
-  updatePagu();
+  // 3. CEK SAFETY ID PAGU
+  const elPagu = document.getElementById("paguInput");
+  if (elPagu) {
+    elPagu.value = formatAngka(pagu);
+  }
+
+  // Jalankan fungsi render
+  if (typeof render === "function") render(); 
+  if (typeof updatePagu === "function") updatePagu();
+  
+  console.log("Data berhasil dimuat tanpa error! 🔥");
 }
 
 function hapusBukti(index) {
