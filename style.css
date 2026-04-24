@@ -54,13 +54,11 @@ body {
 
 .brand span { color: var(--accent); }
 
-/* MAIN CONTENT */
 .main-content {
     flex: 1;
     padding: 30px;
     max-width: calc(100vw - 260px);
 }
-
 .top-bar {
     display: flex;
     justify-content: space-between;
@@ -71,13 +69,11 @@ body {
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     margin-bottom: 30px;
 }
-
 .input-group {
     display: inline-flex;
     flex-direction: column;
     margin-left: 20px;
 }
-
 .input-group label {
     font-size: 11px;
     font-weight: bold;
@@ -92,15 +88,12 @@ body {
     border-radius: 8px;
     font-weight: 600;
 }
-
-/* CARDS */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 25px;
     margin-bottom: 30px;
 }
-
 .stat-card {
     background: var(--glass);
     padding: 25px;
@@ -111,9 +104,7 @@ body {
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border: 1px solid white;
 }
-
 .stat-card:hover { transform: translateY(-10px); }
-
 .icon-box {
     width: 60px;
     height: 60px;
@@ -125,14 +116,11 @@ body {
     justify-content: center;
     font-size: 1.5rem;
 }
-
 .icon-box.danger { background: #fee2e2; color: #dc2626; }
 .icon-box.info { background: #dcfce7; color: #16a34a; }
 
 .stat-info h3 { font-size: 0.9rem; color: #64748b; }
 .stat-info p { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
-
-/* TABLES */
 .content-card {
     background: var(--glass);
     border-radius: 24px;
@@ -140,14 +128,12 @@ body {
     box-shadow: 0 15px 35px rgba(0,0,0,0.05);
     margin-bottom: 30px;
 }
-
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 25px;
 }
-
 table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
 th { text-align: left; padding: 15px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; }
 td { background: white; padding: 15px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
@@ -157,11 +143,8 @@ td:last-child {
     text-align: center;
     vertical-align: middle;
 }
-/* PROGRESS BAR */
 .progress { background: #f1f5f9; height: 10px; border-radius: 5px; overflow: hidden; width: 100px; }
 .progress-bar { background: linear-gradient(90deg, var(--primary), #8b5cf6); height: 100%; }
-
-/* MODAL MODERN */
 .modal-content-premium {
     background: white;
     width: 95%;
@@ -171,7 +154,6 @@ td:last-child {
     overflow: hidden;
     animation: slideUp 0.4s ease-out;
 }
-
 .modal-header {
     background: var(--primary);
     color: white;
@@ -179,7 +161,6 @@ td:last-child {
     display: flex;
     justify-content: space-between;
 }
-
 .btn-primary {
     background: var(--primary);
     color: white;
@@ -189,30 +170,23 @@ td:last-child {
     font-weight: 600;
     transition: 0.3s;
 }
-
 .btn-primary:hover { background: var(--primary-light); transform: scale(1.05); }
-
 @keyframes slideUp {
     from { transform: translateY(50px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
-
-/* CHART & ACTIONS */
 .grid-two-cols {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 25px;
 }
-
 .chart-container { display: flex; flex-direction: column; align-items: center; }
 #myChart { max-width: 300px !important; max-height: 300px !important; }
-
 .action-grid {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
-
 .drop-zone {
     border: 2px dashed #cbd5e1;
     border-radius: 20px;
@@ -222,8 +196,6 @@ td:last-child {
 }
 
 .drop-zone.dragover { border-color: var(--primary); background: #f5f3ff; }
-
-/* Font Awesome & UX Fixes */
 .btn-action.excel {
     background: #10b981;
     color: white;
@@ -232,8 +204,6 @@ td:last-child {
     font-weight: bold;
     border: none;
 }
-
-/* MODAL ANIMATION & STYLE */
 .modal {
     display: none;
     position: fixed;
@@ -245,7 +215,6 @@ td:last-child {
     align-items: center;
     justify-content: center;
 }
-
 .modal-content-premium {
     background: rgba(255, 255, 255, 0.9);
     width: 98%;
@@ -258,13 +227,10 @@ td:last-child {
     overflow: hidden;
     animation: zoomInModal 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
 @keyframes zoomInModal {
     from { transform: scale(0.9); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
-
-/* HEADER MODAL */
 .modal-header-glass {
     padding: 25px 40px;
     background: var(--primary);
@@ -273,7 +239,6 @@ td:last-child {
     justify-content: space-between;
     align-items: center;
 }
-
 .modal-title-area { display: flex; align-items: center; gap: 20px; }
 .modal-title-area i { font-size: 2rem; color: var(--accent); }
 .badge-status { 
@@ -302,27 +267,21 @@ td:last-child {
     transition: 0.3s;
 }
 .btn-glow-add:hover { background: var(--accent); color: var(--primary); transform: translateY(-3px); }
-
-/* TABLE DETAIL */
 .modal-body-premium { padding: 30px; overflow-y: auto; flex: 1; }
 .detail-actions-bar { 
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px dashed #cbd5e1;
 }
-
 .premium-table { width: 100%; border-spacing: 0 8px; border-collapse: separate; }
 .premium-table th { color: #64748b; font-weight: 600; padding: 10px 15px; }
 .premium-table td { background: #f8fafc; border: none; padding: 15px; }
 .premium-table tr:hover td { background: #f1f5f9; }
-
-/* INPUT STYLES IN TABLE */
 .premium-table input, .premium-table textarea {
     width: 100%; border: 1px solid #e2e8f0; padding: 10px; border-radius: 10px;
     background: white; font-family: inherit; transition: 0.3s;
 }
 .premium-table input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(41, 16, 86, 0.1); }
 
-/* UPLOAD BUKTI BUTTON */
 .btn-upload-modern {
     background: #e0e7ff; color: #4338ca; border: none; padding: 8px 12px;
     border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 11px;
@@ -331,23 +290,17 @@ td:last-child {
 
 .running-total { text-align: right; }
 .running-total h3 { color: var(--primary); font-size: 1.8rem; }
-
-/* Styling Persentase Modern */
-/* Warna Utama & Animasi Persentase */
 .persen {
     font-size: 1.2rem;
     font-weight: 800;
-    color: #291056 !important; /* Warna Utama */
-    font-family: 'Courier New', Courier, monospace; /* Biar angka stabil saat ganti */
+    color: #291056 !important; 
+    font-family: 'Courier New', Courier, monospace; 
     transition: all 0.3s ease;
 }
-
 .table-row:hover .persen {
     transform: scale(1.15);
     text-shadow: 0 0 10px rgba(41, 16, 86, 0.2);
 }
-
-/* Progress Bar Eksklusif */
 .progress {
     background: #e2e8f0;
     height: 10px;
@@ -359,8 +312,6 @@ td:last-child {
     background: linear-gradient(90deg, #291056, #6366f1) !important;
     border-radius: 20px;
 }
-
-/* Legend Grid Modern */
 .legend {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -443,24 +394,18 @@ td:last-child {
     position: relative;
     z-index: 2;
 }
-
-/* Logo dengan Efek Glow */
 .logo-glow {
     height: 80px !important;
     width: auto !important;
     filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
     transition: 0.5s;
 }
-
 .logo-glow:hover {
     transform: scale(1.1) rotate(5deg);
 }
-
-/* Typography Exclusive */
 .title-wrapper {
     text-align: left;
 }
-
 .sub-title {
     display: block;
     font-size: 10px;
@@ -470,26 +415,21 @@ td:last-child {
     margin-bottom: 5px;
     text-transform: uppercase;
 }
-
 .main-title {
     font-size: 2.2rem;
     font-weight: 850;
     margin: 0;
     background: linear-gradient(to right, #ffffff 0%, #e2e8f0 100%);
-    
-    /* Tambahkan baris di bawah ini */
     background-clip: text; 
     -webkit-background-clip: text;
-    
     -webkit-text-fill-color: transparent;
     letter-spacing: -1px;
     text-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }
-
 .title-underline {
     width: 60px;
     height: 4px;
-    background: #fbbf24; /* Aksen Kuning Emas */
+    background: #fbbf24; 
     margin-top: 8px;
     border-radius: 10px;
     transition: width 0.5s ease;
@@ -498,8 +438,6 @@ td:last-child {
 .header-premium:hover .title-underline {
     width: 150px;
 }
-
-/* CLOCK WIDGET EXCLUSIVE */
 .glass-clock {
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
@@ -517,22 +455,19 @@ td:last-child {
 .glass-clock:hover {
     transform: translateY(-5px) scale(1.02);
     background: rgba(255, 255, 255, 0.25);
-    border-color: #fbbf24; /* Warna emas saat hover */
+    border-color: #fbbf24; 
 }
 
-/* Animasi Ikon Jam */
 .fa-spin-hover {
     color: #fbbf24;
     font-size: 1.2rem;
     animation: pulse 2s infinite;
 }
-
 @keyframes pulse {
     0% { transform: scale(1); opacity: 1; }
     50% { transform: scale(1.2); opacity: 0.7; }
     100% { transform: scale(1); opacity: 1; }
 }
-
 .clock-section, .date-section {
     display: flex;
     align-items: center;
@@ -540,9 +475,8 @@ td:last-child {
     color: white;
     font-weight: 600;
 }
-
 #txt-jam {
-    font-family: 'Courier New', monospace; /* Font digital biar presisi */
+    font-family: 'Courier New', monospace; 
     font-size: 1.1rem;
     letter-spacing: 1px;
 }
@@ -560,44 +494,41 @@ td:last-child {
 
 .header-premium {
     background: linear-gradient(135deg, #291056 0%, #452485 100%);
-    padding: 25px 40px; /* Ditambah padding kiri-kanan agar isi tidak mepet */
+    padding: 25px 40px; 
     border-radius: 0 0 30px 30px;
     box-shadow: 0 10px 30px rgba(41, 16, 86, 0.3);
     position: relative;
     overflow: hidden;
-    width: 100%; /* Pastikan full width */
+    width: 100%; 
 }
-
-/* Tata Letak Header Baru */
 .header-content {
 display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    max-width: 96%; /* Kasih sedikit gap dari tepi kanan-kiri container utama */
+    max-width: 96%; 
     margin: 0 auto
 }
 .header-left-banner {
     display: flex;
     align-items: center;
     gap: 20px;
-    flex: 1; /* Biar banner mengambil sisa ruang yang luas */
+    flex: 1; 
 }
 
 .header-right-inputs {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding-right: 20px; /* 🔥 INI KUNCINYA: Biar nggak mepet garis kanan */
+    padding-right: 20px; 
     min-width: 280px;
 }
 
 .input-group-premium {
     display: flex;
     flex-direction: column;
-    align-items: flex-end; /* Tulisan label rata kanan */
+    align-items: flex-end; 
 }
-
 .input-group-premium label {
     font-size: 10px;
     color: #a5b4fc;
@@ -611,7 +542,7 @@ background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     color: white;
-    padding: 8px 15px; /* Lebih lebar biar mewah */
+    padding: 8px 15px; 
     text-align: right;
     width: 200px;
     transition: 0.3s;
@@ -623,43 +554,35 @@ background: rgba(255, 255, 255, 0.1);
     border-color: #fbbf24;
     background: rgba(255, 255, 255, 0.2);
 }
-
-/* Styling Jam di Sidebar */
 .sidebar-clock-wrapper {
     padding: 20px;
     margin-top: 10px;
 }
-
 .sidebar-clock-wrapper .glass-clock {
-    flex-direction: column; /* Jam & Tanggal atas bawah di sidebar */
+    flex-direction: column; 
     align-items: center;
     text-align: center;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     padding: 15px;
 }
-
 #txt-jam {
     font-size: 1.4rem;
     font-weight: 800;
-    color: #fbbf24; /* Warna emas biar stand out */
+    color: #fbbf24; 
 }
-
 #txt-tanggal {
     font-size: 0.8rem;
     color: #e2e8f0;
 }
-
-/* CONTAINER AKSI */
 .aksi-group-modern {
     display: flex;
     gap: 12px;
-    justify-content: center; /* Menengahkan secara horizontal */
-    align-items: center;     /* Menengahkan secara vertikal */
+    justify-content: center; 
+    align-items: center;     
     width: 100%
 }
 
-/* BASE BUTTON PREMIUM */
 .btn-icon {
     width: 42px;
     height: 42px;
@@ -678,28 +601,20 @@ background: rgba(255, 255, 255, 0.1);
     overflow: hidden;
 }
 
-/* EFEK HOVER UMUM */
 .btn-icon:hover {
     transform: translateY(-4px) scale(1.1);
     box-shadow: 0 10px 20px rgba(41, 16, 86, 0.15);
 }
-
 .btn-icon:active {
     transform: scale(0.95);
 }
-
-/* VARIASI WARNA EKSKLUSIF */
-
-/* Button Lihat (Primary) */
 .btn-icon.view {
-    color: #291056; /* Warna utama kamu */
+    color: #291056; 
 }
 .btn-icon.view:hover {
     background: #291056;
     color: white;
 }
-
-/* Button Edit (Accent/Amber) */
 .btn-icon.edit {
     color: #f59e0b;
 }
@@ -707,8 +622,6 @@ background: rgba(255, 255, 255, 0.1);
     background: #f59e0b;
     color: white;
 }
-
-/* Button Delete (Soft Danger) */
 .btn-icon.delete {
     color: #ef4444;
 }
@@ -716,8 +629,6 @@ background: rgba(255, 255, 255, 0.1);
     background: #ef4444;
     color: white;
 }
-
-/* TOOLTIP MINI (Opsional tapi keren) */
 .btn-icon::after {
     content: attr(title);
     position: absolute;
@@ -732,8 +643,228 @@ background: rgba(255, 255, 255, 0.1);
     pointer-events: none;
     white-space: nowrap;
 }
-
 .btn-icon:hover::after {
     bottom: -25px;
     opacity: 1;
+}
+.btn-archive {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); /* Warna Emas */
+    color: #291056;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+    margin-top: 80px;
+    width: 100%; 
+    justify-content: center;
+}
+.btn-archive:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(251, 191, 36, 0.5);
+    background: linear-gradient(135deg, #ffffff 0%, #fbbf24 100%);
+}
+.btn-archive i {
+    font-size: 1.1rem;
+}
+
+/* LOGIN OVERLAY */
+.login-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #291056;
+    z-index: 9999; /* Pastikan di atas segalanya */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-box {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+    color: white;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.login-box img { width: 80px; margin-bottom: 20px; }
+
+.pin-input-group input {
+    background: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    width: 150px;
+    text-align: center;
+    font-size: 1.5rem;
+    letter-spacing: 5px;
+    font-weight: bold;
+}
+
+.pin-input-group button {
+    background: #fbbf24;
+    color: #291056;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+/* MODAL GANTI PIN STYLE */
+.modal-premium {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content-small {
+    background: white;
+    width: 350px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+}
+
+.modal-header-premium {
+    background: var(--primary);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body-pin {
+    padding: 25px;
+}
+
+.input-group-pin {
+    margin-bottom: 15px;
+}
+
+.input-group-pin label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: var(--primary);
+}
+
+.input-group-pin input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 1.2rem;
+    letter-spacing: 4px;
+}
+
+.btn-save-pin {
+    width: 100%;
+    background: var(--accent);
+    color: var(--primary);
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+/* Warna khusus menu Sidebar agar tidak nyaru */
+.nav-item.pin-menu {
+    background: rgba(251, 191, 36, 0.1); /* Kuning transparan */
+    color: #fbbf24 !important;
+    border-left: 3px solid #fbbf24;
+}
+
+.nav-item.archive-menu {
+    background: rgba(34, 211, 238, 0.1); /* Biru transparan */
+    color: #22d3ee !important;
+    border-left: 3px solid #22d3ee;
+}
+
+.nav-item:hover {
+    filter: brightness(1.2);
+    transform: translateX(5px);
+}
+
+.archive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+.card-arsip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+/* Styling Navigasi Sidebar Baru */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.nav-item i {
+    font-size: 1.2rem;
+    transition: 0.3s;
+}
+
+/* Efek Hover Khusus Ganti PIN (Warna Kuning/Gold) */
+.nav-item.pin-menu:hover {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: #fbbf24;
+    color: #fbbf24;
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+    transform: translateX(5px);
+}
+
+/* Efek Hover Khusus Arsip (Warna Biru Cyan) */
+.nav-item.archive-menu:hover {
+    background: rgba(34, 211, 238, 0.1);
+    border-color: #22d3ee;
+    color: #22d3ee;
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+    transform: translateX(5px);
+}
+
+.nav-item:hover i {
+    transform: scale(1.2);
 }
