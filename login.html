@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login RKAS</title>
+    <link rel="stylesheet" href="style.css"> </head>
+<body style="background: #291056; display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <div class="login-box" style="text-align: center; color: white;">
+        <img src="img/LOGO TKIT IMAM BUKHARI.png" width="100">
+        <h2>Akses Terkunci</h2>
+        <input type="password" id="pinInput" placeholder="Masukkan PIN" style="padding: 10px; border-radius: 5px; border: none; text-align: center; font-size: 1.2rem;">
+        <br><br>
+        <button id="btnMasuk" style="padding: 10px 20px; background: #fbbf24; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">MASUK</button>
+        <p id="loginError" style="color: #ff4d4d;"></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuZBG43SG6BmxN3VYVQgJRh2sPk0P-UK0",
+            authDomain: "rkasweb.firebaseapp.com",
+            projectId: "rkasweb",
+            storageBucket: "rkasweb.firebasestorage.app",
+            appId: "1:878789834712:web:b23714fc813a13c980a4ad"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById("btnMasuk").addEventListener("click", async () => {
+            const pin = document.getElementById("pinInput").value;
+            const res = await getDoc(doc(db, "settings", "access_control"));
+            
+            if (res.exists() && pin === res.data().pin) {
+                sessionStorage.setItem("statusLogin", "aktif");
+                window.location.href = "index.html"; // Pindah ke dashboard
+            } else {
+                document.getElementById("loginError").innerText = "PIN Salah!";
+            }
+        });
+    </script>
+</body>
+</html>
