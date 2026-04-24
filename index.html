@@ -26,6 +26,17 @@
       <div class="date-section">
         <span id="txt-tanggal">Memuat...</span>
       </div>
+      <nav class="sidebar-nav">
+  <a href="#" onclick="openPinModal()" class="nav-item pin-menu">
+    <i class="fas fa-key"></i> 
+    <span>Ganti PIN Keamanan</span>
+  </a>
+  
+  <a href="arsip.html" class="nav-item archive-menu">
+    <i class="fas fa-archive"></i> 
+    <span>Vault Arsip Tahun</span>
+  </a>
+</nav>
     </div>
   </div>
   </aside>
@@ -49,7 +60,7 @@
       <div class="header-right-inputs">
         <div class="input-group-premium">
           <label><i class="fas fa-calendar-alt"></i> Tahun Ajaran</label>
-          <input type="text" id="tahunAjaran" placeholder="2025/2026" onchange="simpanData()">
+         <input type="text" id="inputTahunAjaran" class="input-premium" placeholder="Contoh: 2025/2026">
         </div>
         <div class="input-group-premium">
           <label><i class="fas fa-wallet"></i> Pagu Dana</label>
@@ -130,6 +141,9 @@
             <button onclick="document.getElementById('fileInput').click()">Pilih File</button>
             <input type="file" id="fileInput" accept=".xlsx" hidden>
           </div>
+          <button class="btn-archive" onclick="simpanData()">
+    <i class="fas fa-cloud-upload-alt"></i> Simpan Data ke Database
+  </button>
         </div>
       </div>
     </div>
@@ -195,12 +209,36 @@
 <div id="imageModal" class="img-modal" onclick="closePreview()">
   <img id="modalImg" class="img-content">
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<div id="pinModal" class="modal-premium">
+  <div class="modal-content-small" data-aos="zoom-in">
+    <div class="modal-header-premium">
+      <h3><i class="fas fa-shield-alt"></i> Keamanan Panel</h3>
+      <button class="btn-close-modal" onclick="closePinModal()">×</button>
+    </div>
+    <div class="modal-body-pin">
+      <div class="input-group-pin">
+        <label>PIN Lama</label>
+        <input type="password" id="oldPin" maxlength="10" placeholder="******">
+      </div>
+      <div class="input-group-pin">
+        <label>PIN Baru</label>
+        <input type="password" id="newPin" maxlength="10" placeholder="******">
+      </div>
+      <div class="input-group-pin">
+        <label>Konfirmasi PIN Baru</label>
+        <input type="password" id="confirmNewPin" maxlength="10" placeholder="******">
+      </div>
+      <button class="btn-save-pin" onclick="processChangePin()">
+        <i class="fas fa-save"></i> Perbarui PIN
+      </button>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js" ></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js" ></script>
 <script>AOS.init({ duration: 800, once: true });</script>
-<script type="module" src="script.js"></script>
+<script type="module" src="script.js" ></script>
 </body>
 </html>
